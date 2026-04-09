@@ -11,7 +11,11 @@ describe("App", () => {
   it("shows the empty state with suggestions", () => {
     render(<App />);
     expect(screen.getByText("Start a conversation")).toBeInTheDocument();
-    expect(screen.getByText("Ask anything. Null Interface provides thoughtful, minimalist responses to help you think clearly.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Ask anything. Null Interface provides thoughtful, minimalist responses to help you think clearly."
+      )
+    ).toBeInTheDocument();
   });
 
   it("renders the chat input", () => {
@@ -21,11 +25,34 @@ describe("App", () => {
 
   it("renders the send button", () => {
     render(<App />);
-    expect(screen.getByRole("button", { name: /send message/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /send message/i })
+    ).toBeInTheDocument();
   });
 
   it("has accessible landmarks", () => {
     render(<App />);
     expect(screen.getByRole("log")).toBeInTheDocument();
+  });
+
+  it("renders suggestion chips as buttons", () => {
+    render(<App />);
+    expect(
+      screen.getByRole("button", { name: /what is minimalism/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /help me focus/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /explain simply/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /design advice/i })
+    ).toBeInTheDocument();
+  });
+
+  it("shows version badge on larger screens", () => {
+    render(<App />);
+    expect(screen.getByText("v2.0")).toBeInTheDocument();
   });
 });

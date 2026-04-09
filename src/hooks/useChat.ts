@@ -1,13 +1,25 @@
-import { useReducer, useCallback, useRef } from "react";
+import { useReducer, useCallback, useRef, useEffect } from "react";
 import type { ConversationState, ChatAction, Message } from "@/types";
 import { generateId } from "@/utils/id";
 import { simulateAIResponse } from "@/utils/ai";
+import { saveMessages, loadMessages, clearMessages } from "@/utils/storage";
 
 const initialState: ConversationState = {
   messages: [],
   isLoading: false,
   error: null,
 };
+
+function isValidMessage(msg: unknown): msg is Message {
+  if (typeof msg !== "object" || msg === null) return false;
+  const m = msg as Record<string, unknown>;
+  return (
+    typeof m.id === "string" &&
+    (m.role === "user" || m.role === "assistant") &&
+    typeof m.content === "string" &&
+    typeof m.timestamp === "number"
+  );
+}
 
 function chatReducer(
   state: ConversationState,
@@ -30,7 +42,11 @@ function chatReducer(
         content: action.payload,
         timestamp: Date.now(),
       };
-      return { ...state, messages: [...state.messages, message], isLoading: false };
+      return {
+        ...state,
+        messages: [...state.messages, message],
+        isLoading: false,
+      };
     }
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
@@ -38,6 +54,8 @@ function chatReducer(
       return { ...state, error: action.payload, isLoading: false };
     case "CLEAR_CONVERSATION":
       return initialState;
+    case "RESTORE_MESSAGES":
+      return { ...state, messages: action.payload };
     default:
       return state;
   }
@@ -46,6 +64,27 @@ function chatReducer(
 export function useChat() {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const abortRef = useRef(false);
+  const hasRestored = useRef(false);
+
+  // Restore messages from localStorage on mount
+  useEffect(() => {
+    if (hasRestored.current) return;
+    hasRestored.current = true;
+
+    const stored = loadMessages();
+    const valid: Message[] = stored.filter(isValidMessage) as Message[];
+    if (valid.length > 0) {
+      dispatch({ type: "RESTORE_MESSAGES", payload: valid });
+    }
+  }, []);
+
+  // Persist messages to localStorage when they change
+  useEffect(() => {
+    if (!hasRestored.current) return;
+    if (state.messages.length > 0) {
+      saveMessages(state.messages);
+    }
+  }, [state.messages]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -76,6 +115,7 @@ export function useChat() {
   const clearConversation = useCallback(() => {
     abortRef.current = true;
     dispatch({ type: "CLEAR_CONVERSATION" });
+    clearMessages();
   }, []);
 
   return {

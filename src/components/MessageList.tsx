@@ -6,10 +6,18 @@ import { useAutoScroll } from "@/hooks/useAutoScroll";
 interface MessageListProps {
   readonly messages: readonly Message[];
   readonly isLoading: boolean;
+  readonly onSuggestionClick?: (text: string) => void;
 }
 
-export function MessageList({ messages, isLoading }: MessageListProps) {
-  const memoizedDeps = useMemo(() => [messages.length, isLoading] as const, [messages.length, isLoading]);
+export function MessageList({
+  messages,
+  isLoading,
+  onSuggestionClick,
+}: MessageListProps) {
+  const memoizedDeps = useMemo(
+    () => [messages.length, isLoading] as const,
+    [messages.length, isLoading]
+  );
   const { containerRef } = useAutoScroll(memoizedDeps);
 
   return (
@@ -20,7 +28,9 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
       aria-label="Chat messages"
       aria-live="polite"
     >
-      {messages.length === 0 && !isLoading && <EmptyState />}
+      {messages.length === 0 && !isLoading && (
+        <EmptyState onSuggestionClick={onSuggestionClick} />
+      )}
 
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
@@ -31,7 +41,18 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
   );
 }
 
-function EmptyState() {
+const SUGGESTIONS = [
+  "What is minimalism?",
+  "Help me focus",
+  "Explain simply",
+  "Design advice",
+] as const;
+
+function EmptyState({
+  onSuggestionClick,
+}: {
+  readonly onSuggestionClick?: (text: string) => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center h-full min-h-[50vh] text-center px-4">
       <div className="mb-6" aria-hidden="true">
@@ -54,29 +75,24 @@ function EmptyState() {
         Start a conversation
       </h2>
       <p className="text-sm text-neutral-500 max-w-xs leading-relaxed">
-        Ask anything. Null Interface provides thoughtful, minimalist responses
-        to help you think clearly.
+        Ask anything. Null Interface provides thoughtful, minimalist responses to
+        help you think clearly.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-2">
         {SUGGESTIONS.map((suggestion) => (
-          <span
+          <button
             key={suggestion}
-            className="text-xs text-neutral-600 bg-neutral-800/50 border border-neutral-700/30 px-3 py-1.5 rounded-full"
+            type="button"
+            onClick={() => onSuggestionClick?.(suggestion)}
+            className="text-xs text-neutral-400 bg-neutral-800/50 border border-neutral-700/30 hover:border-primary-500/30 hover:text-neutral-200 hover:bg-neutral-800 px-3 py-2 rounded-full transition-all duration-200 cursor-pointer min-h-[44px]"
           >
             {suggestion}
-          </span>
+          </button>
         ))}
       </div>
     </div>
   );
 }
-
-const SUGGESTIONS = [
-  "What is minimalism?",
-  "Help me focus",
-  "Explain simply",
-  "Design advice",
-] as const;
 
 function TypingIndicator() {
   return (

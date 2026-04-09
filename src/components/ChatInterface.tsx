@@ -11,7 +11,11 @@ export function ChatInterface() {
   return (
     <div className="flex flex-col h-dvh max-h-dvh bg-neutral-950">
       <Header messageCount={messages.length} onClear={clearConversation} />
-      <MessageList messages={messages} isLoading={isLoading} />
+      <MessageList
+        messages={messages}
+        isLoading={isLoading}
+        onSuggestionClick={sendMessage}
+      />
       <ErrorBanner message={error} />
       <InputBar onSend={sendMessage} isLoading={isLoading} />
     </div>

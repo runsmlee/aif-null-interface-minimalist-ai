@@ -9,7 +9,9 @@ describe("InputBar", () => {
     render(<InputBar onSend={onSend} isLoading={false} />);
 
     expect(screen.getByPlaceholderText("Ask anything...")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /send message/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /send message/i })
+    ).toBeInTheDocument();
   });
 
   it("calls onSend when submitting a message", async () => {
@@ -45,6 +47,8 @@ describe("InputBar", () => {
     const onSend = vi.fn();
     render(<InputBar onSend={onSend} isLoading={false} />);
 
-    expect(screen.getByRole("button", { name: /send message/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /send message/i })
+    ).toBeDisabled();
   });
 });

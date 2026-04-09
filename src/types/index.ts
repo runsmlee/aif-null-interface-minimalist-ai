@@ -16,4 +16,5 @@ export type ChatAction =
   | { type: "ADD_ASSISTANT_MESSAGE"; payload: string }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
-  | { type: "CLEAR_CONVERSATION" };
+  | { type: "CLEAR_CONVERSATION" }
+  | { type: "RESTORE_MESSAGES"; payload: readonly Message[] };

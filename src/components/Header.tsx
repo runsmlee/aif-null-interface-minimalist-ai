@@ -5,9 +5,15 @@ interface HeaderProps {
   readonly onClear: () => void;
 }
 
-export const Header = memo(function Header({ messageCount, onClear }: HeaderProps) {
+export const Header = memo(function Header({
+  messageCount,
+  onClear,
+}: HeaderProps) {
   return (
-    <header className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 backdrop-blur-sm bg-neutral-950/80 sticky top-0 z-10">
+    <header
+      className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 backdrop-blur-sm bg-neutral-950/80 sticky top-0 z-10"
+      role="banner"
+    >
       <div className="flex items-center gap-3">
         <div className="relative" aria-hidden="true">
           <div className="w-2.5 h-2.5 rounded-full bg-primary-500 pulse-glow" />
@@ -16,7 +22,7 @@ export const Header = memo(function Header({ messageCount, onClear }: HeaderProp
           Null Interface
         </h1>
         <span className="text-xs text-neutral-500 font-mono hidden sm:inline">
-          v1.0
+          v2.0
         </span>
       </div>
 
@@ -32,7 +38,7 @@ export const Header = memo(function Header({ messageCount, onClear }: HeaderProp
         <button
           onClick={onClear}
           disabled={messageCount === 0}
-          className="text-xs text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200 px-2 py-1 rounded focus-visible:outline-2 focus-visible:outline-primary-500"
+          className="text-xs text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-neutral-800/50 focus-visible:outline-2 focus-visible:outline-primary-500 min-h-[44px]"
           aria-label="Clear conversation"
         >
           Clear

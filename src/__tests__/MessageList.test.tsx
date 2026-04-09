@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { MessageList } from "../components/MessageList";
 import type { Message } from "../types";
 
@@ -26,8 +26,12 @@ describe("MessageList", () => {
 
   it("renders messages correctly", () => {
     render(<MessageList messages={mockMessages} isLoading={false} />);
-    expect(screen.getByText("Hello, this is a test message")).toBeInTheDocument();
-    expect(screen.getByText("This is a test response from the AI")).toBeInTheDocument();
+    expect(
+      screen.getByText("Hello, this is a test message")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("This is a test response from the AI")
+    ).toBeInTheDocument();
   });
 
   it("shows typing indicator when loading", () => {
@@ -37,11 +41,45 @@ describe("MessageList", () => {
 
   it("does not show empty state when there are messages", () => {
     render(<MessageList messages={mockMessages} isLoading={false} />);
-    expect(screen.queryByText("Start a conversation")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Start a conversation")
+    ).not.toBeInTheDocument();
   });
 
   it("has correct ARIA role", () => {
     render(<MessageList messages={mockMessages} isLoading={false} />);
-    expect(screen.getByRole("log", { name: /chat messages/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("log", { name: /chat messages/i })
+    ).toBeInTheDocument();
+  });
+
+  it("renders suggestion buttons when empty", () => {
+    const onSuggestionClick = vi.fn();
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        onSuggestionClick={onSuggestionClick}
+      />
+    );
+    const suggestions = screen.getAllByRole("button");
+    expect(suggestions.length).toBe(4);
+  });
+
+  it("calls onSuggestionClick when a suggestion is clicked", async () => {
+    const user = (await import("@testing-library/user-event")).default.setup();
+    const onSuggestionClick = vi.fn();
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        onSuggestionClick={onSuggestionClick}
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /what is minimalism/i })
+    );
+    expect(onSuggestionClick).toHaveBeenCalledWith("What is minimalism?");
   });
 });

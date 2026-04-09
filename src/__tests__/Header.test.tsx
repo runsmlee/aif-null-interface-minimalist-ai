@@ -20,12 +20,16 @@ describe("Header", () => {
 
   it("disables clear button when no messages", () => {
     render(<Header messageCount={0} onClear={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /clear conversation/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /clear conversation/i })
+    ).toBeDisabled();
   });
 
   it("enables clear button when there are messages", () => {
     render(<Header messageCount={3} onClear={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /clear conversation/i })).not.toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /clear conversation/i })
+    ).not.toBeDisabled();
   });
 
   it("calls onClear when clear button is clicked", async () => {
@@ -33,7 +37,14 @@ describe("Header", () => {
     const onClear = vi.fn();
     render(<Header messageCount={2} onClear={onClear} />);
 
-    await user.click(screen.getByRole("button", { name: /clear conversation/i }));
+    await user.click(
+      screen.getByRole("button", { name: /clear conversation/i })
+    );
     expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it("has a banner role", () => {
+    render(<Header messageCount={0} onClear={vi.fn()} />);
+    expect(screen.getByRole("banner")).toBeInTheDocument();
   });
 });
