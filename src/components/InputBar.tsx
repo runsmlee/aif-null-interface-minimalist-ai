@@ -9,10 +9,15 @@ export function InputBar({ onSend, isLoading }: InputBarProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const charCount = input.length;
+  const maxChars = 2000;
+  const isNearLimit = charCount > maxChars * 0.9;
+  const isOverLimit = charCount > maxChars;
+
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (!input.trim() || isLoading) return;
+      if (!input.trim() || isLoading || isOverLimit) return;
 
       onSend(input);
       setInput("");
@@ -22,14 +27,14 @@ export function InputBar({ onSend, isLoading }: InputBarProps) {
         textareaRef.current.style.height = "auto";
       }
     },
-    [input, isLoading, onSend]
+    [input, isLoading, isOverLimit, onSend]
   );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (!input.trim() || isLoading) return;
+        if (!input.trim() || isLoading || isOverLimit) return;
 
         onSend(input);
         setInput("");
@@ -39,7 +44,7 @@ export function InputBar({ onSend, isLoading }: InputBarProps) {
         }
       }
     },
-    [input, isLoading, onSend]
+    [input, isLoading, isOverLimit, onSend]
   );
 
   const handleInput = useCallback(
@@ -53,7 +58,7 @@ export function InputBar({ onSend, isLoading }: InputBarProps) {
     []
   );
 
-  const canSend = input.trim().length > 0 && !isLoading;
+  const canSend = input.trim().length > 0 && !isLoading && !isOverLimit;
 
   return (
     <form
@@ -99,9 +104,24 @@ export function InputBar({ onSend, isLoading }: InputBarProps) {
           </svg>
         </button>
       </div>
-      <p className="text-[10px] text-neutral-600 text-center mt-2">
-        Press Enter to send · Shift+Enter for new line
-      </p>
+      <div className="flex items-center justify-between mt-2 px-1">
+        <p className="text-[10px] text-neutral-600">
+          Press Enter to send · Shift+Enter for new line
+        </p>
+        {charCount > maxChars * 0.5 && (
+          <span
+            className={`text-[10px] tabular-nums ${
+              isOverLimit
+                ? "text-primary-400"
+                : isNearLimit
+                  ? "text-amber-400"
+                  : "text-neutral-600"
+            }`}
+          >
+            {charCount}/{maxChars}
+          </span>
+        )}
+      </div>
     </form>
   );
 }

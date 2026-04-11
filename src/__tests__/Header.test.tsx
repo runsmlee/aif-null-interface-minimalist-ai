@@ -32,13 +32,20 @@ describe("Header", () => {
     ).not.toBeDisabled();
   });
 
-  it("calls onClear when clear button is clicked", async () => {
+  it("calls onClear when clear button is clicked twice (confirm flow)", async () => {
     const user = (await import("@testing-library/user-event")).default.setup();
     const onClear = vi.fn();
     render(<Header messageCount={2} onClear={onClear} />);
 
+    // First click shows confirmation
     await user.click(
       screen.getByRole("button", { name: /clear conversation/i })
+    );
+    expect(onClear).not.toHaveBeenCalled();
+
+    // Second click confirms
+    await user.click(
+      screen.getByRole("button", { name: /confirm clear conversation/i })
     );
     expect(onClear).toHaveBeenCalledTimes(1);
   });

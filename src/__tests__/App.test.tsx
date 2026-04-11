@@ -49,10 +49,16 @@ describe("App", () => {
     expect(
       screen.getByRole("button", { name: /design advice/i })
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /how to think clearly/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /what makes good ux/i })
+    ).toBeInTheDocument();
   });
 
   it("shows version badge on larger screens", () => {
     render(<App />);
-    expect(screen.getByText("v2.0")).toBeInTheDocument();
+    expect(screen.getByText("v2.1")).toBeInTheDocument();
   });
 });

@@ -33,7 +33,7 @@ export const MessageBubble = memo(function MessageBubble({
           isUser
             ? "bg-primary-600/20 border border-primary-600/30 text-neutral-100"
             : "bg-neutral-800/50 border border-neutral-700/30 text-neutral-200"
-        } rounded-2xl px-4 py-3`}
+        } rounded-2xl px-4 py-3 transition-colors duration-200 group-hover:border-neutral-600/40`}
       >
         <div className="flex items-center gap-2 mb-1.5">
           <span

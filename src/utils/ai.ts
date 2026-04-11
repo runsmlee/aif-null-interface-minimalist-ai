@@ -9,24 +9,35 @@ const AI_RESPONSES: readonly string[] = [
   "There's a principle I find useful: the complexity budget.\n\nEvery screen, every interaction, every choice you present to a user costs cognitive energy. You have a finite budget per session. Spend it wisely — on the things that matter most.\n\nEverything else should be automatic, hidden, or gone.",
   "Let me think about this differently.\n\nWhat would this look like if it were easy? Not easy because you're cutting corners — easy because you've found the right abstraction.\n\nMost hard problems are hard because we're solving them at the wrong level. Move up one layer and the complexity dissolves.",
   "The art is in knowing when to stop.\n\nIteration is essential, but there's a point where adding more doesn't improve the result — it just makes it different. Learning to recognize that point is one of the most valuable skills in any creative endeavor.",
+  "Here's a framework that might help:\n\nThink in terms of layers. The base layer is functionality — it works. The next layer is usability — it's easy. The top layer is delight — it's memorable.\n\nMost people spend all their time on the base layer. The magic happens when you nail all three.",
+  "Let me share an observation about how we approach problems.\n\nWe tend to add things when we should be subtracting. Research shows that people systematically overlook subtractive solutions. The next time you're stuck, ask: what can I take away to make this better?",
 ];
 
 const KEYWORD_RESPONSES: Record<string, readonly string[]> = {
   minimalism: [
     "Minimalism isn't about owning nothing — it's about everything you own having purpose.\n\nIn interface design, this means every pixel should serve the user. If an element doesn't help someone accomplish their goal, it's visual noise.\n\nAsk yourself: what can I remove without losing meaning?",
     "The essence of minimalism is intentionality.\n\nIt's not about having less for the sake of less. It's about making deliberate choices about what earns a place in your life — or on your screen. Every element should justify its existence.",
+    "Dieter Rams said it best: good design is as little design as possible.\n\nLess, but better. Focus on the essential aspects. Back to purity, back to simplicity. That principle applies equally to products, interfaces, and life choices.",
   ],
   focus: [
     "Focus is the ultimate competitive advantage.\n\nHere's a practical technique: identify the single most important outcome for today. Write it down. Then ruthlessly eliminate everything that doesn't contribute to it.\n\nThe clarity that follows is remarkable.",
     "To improve focus, reduce context switching.\n\nEach time you switch tasks, there's a cognitive cost — about 23 minutes to regain deep focus. Batch similar tasks, silence notifications, and protect your deep work hours like appointments.",
+    "A focused mind is a powerful tool.\n\nThe Pomodoro Technique works well: 25 minutes of deep work, then a 5-minute break. After four rounds, take a longer break. The structure eliminates decision fatigue about when to work and when to rest.",
   ],
   design: [
     "Good design is invisible. Great design is inevitable.\n\nThe user should never have to think about the interface — they should only think about their goal. Every moment spent figuring out how to use something is a moment stolen from what they actually want to do.",
     "The best design advice I ever received: draw the ideal interface first, then work backwards.\n\nDon't start with constraints. Start with the perfect experience. Then figure out how to build it. You'll be surprised how often the 'impossible' parts have simple solutions.",
+    "Design is fundamentally about communication.\n\nEvery color, shape, and interaction sends a message. The question isn't whether your design communicates — it always does. The question is whether it communicates what you intend.",
   ],
   explain: [
     "The Feynman technique works beautifully here:\n\n1. Explain the concept as if teaching a child\n2. Identify gaps in your explanation\n3. Go back and learn those gaps\n4. Simplify and use analogies\n\nIf you can't explain it simply, you don't understand it well enough yet.",
     "Here's the simplest framing I can offer:\n\nStrip away all the jargon and technical language. What's happening at the most basic level? Once you see that core mechanism, everything else is just layers of detail built on top of it.",
+  ],
+  help: [
+    "I'm here to help you think more clearly.\n\nWhether you need to work through a problem, understand a concept, or make a decision — I'll aim to cut through the noise and give you something useful.\n\nWhat's on your mind?",
+  ],
+  hello: [
+    "Welcome to Null Interface.\n\nI'm designed to help you think clearly and act deliberately. No clutter, no noise — just focused conversation.\n\nWhat would you like to explore?",
   ],
 };
 

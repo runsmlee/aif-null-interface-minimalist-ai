@@ -46,6 +46,8 @@ const SUGGESTIONS = [
   "Help me focus",
   "Explain simply",
   "Design advice",
+  "How to think clearly?",
+  "What makes good UX?",
 ] as const;
 
 function EmptyState({

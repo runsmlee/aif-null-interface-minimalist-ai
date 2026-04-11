@@ -63,7 +63,7 @@ describe("MessageList", () => {
       />
     );
     const suggestions = screen.getAllByRole("button");
-    expect(suggestions.length).toBe(4);
+    expect(suggestions.length).toBe(6);
   });
 
   it("calls onSuggestionClick when a suggestion is clicked", async () => {
