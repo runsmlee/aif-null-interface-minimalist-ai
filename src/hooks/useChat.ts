@@ -86,12 +86,15 @@ export function useChat() {
     }
   }, [state.messages]);
 
+  const lastUserMessageRef = useRef<string | null>(null);
+
   const sendMessage = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
       if (!trimmed || state.isLoading) return;
 
       abortRef.current = false;
+      lastUserMessageRef.current = trimmed;
 
       dispatch({ type: "ADD_USER_MESSAGE", payload: trimmed });
       dispatch({ type: "SET_LOADING", payload: true });
@@ -112,6 +115,27 @@ export function useChat() {
     [state.isLoading]
   );
 
+  const retryLastMessage = useCallback(() => {
+    const lastMsg = lastUserMessageRef.current;
+    if (lastMsg) {
+      dispatch({ type: "SET_ERROR", payload: null });
+      dispatch({ type: "SET_LOADING", payload: true });
+
+      simulateAIResponse(lastMsg)
+        .then((response) => {
+          if (!abortRef.current) {
+            dispatch({ type: "ADD_ASSISTANT_MESSAGE", payload: response });
+          }
+        })
+        .catch(() => {
+          dispatch({
+            type: "SET_ERROR",
+            payload: "Something went wrong. Please try again.",
+          });
+        });
+    }
+  }, []);
+
   const clearConversation = useCallback(() => {
     abortRef.current = true;
     dispatch({ type: "CLEAR_CONVERSATION" });
@@ -124,5 +148,6 @@ export function useChat() {
     error: state.error,
     sendMessage,
     clearConversation,
+    retryLastMessage,
   };
 }

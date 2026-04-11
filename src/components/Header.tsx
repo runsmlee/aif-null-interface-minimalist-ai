@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useRef, useEffect } from "react";
 
 interface HeaderProps {
   readonly messageCount: number;
@@ -10,15 +10,29 @@ export const Header = memo(function Header({
   onClear,
 }: HeaderProps) {
   const [confirmClear, setConfirmClear] = useState(false);
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (confirmTimerRef.current) {
+        clearTimeout(confirmTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleClearClick = useCallback(() => {
     if (confirmClear) {
       onClear();
       setConfirmClear(false);
+      if (confirmTimerRef.current) {
+        clearTimeout(confirmTimerRef.current);
+        confirmTimerRef.current = null;
+      }
     } else {
       setConfirmClear(true);
       // Auto-dismiss confirmation after 3 seconds
-      setTimeout(() => setConfirmClear(false), 3000);
+      confirmTimerRef.current = setTimeout(() => setConfirmClear(false), 3000);
     }
   }, [confirmClear, onClear]);
 

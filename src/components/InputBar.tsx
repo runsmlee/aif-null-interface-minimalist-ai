@@ -1,13 +1,15 @@
-import { useState, useCallback, useRef, type KeyboardEvent, type FormEvent } from "react";
+import { useState, useCallback, useRef, type KeyboardEvent, type FormEvent, type RefObject } from "react";
 
 interface InputBarProps {
   readonly onSend: (message: string) => void;
   readonly isLoading: boolean;
+  readonly inputRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
-export function InputBar({ onSend, isLoading }: InputBarProps) {
+export function InputBar({ onSend, isLoading, inputRef: externalRef }: InputBarProps) {
   const [input, setInput] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = externalRef ?? internalRef;
 
   const charCount = input.length;
   const maxChars = 2000;
@@ -106,7 +108,7 @@ export function InputBar({ onSend, isLoading }: InputBarProps) {
       </div>
       <div className="flex items-center justify-between mt-2 px-1">
         <p className="text-[10px] text-neutral-600">
-          Press Enter to send · Shift+Enter for new line
+          <span className="hidden sm:inline">Press <kbd className="px-1 py-0.5 bg-neutral-800/50 rounded text-neutral-500 font-mono">/</kbd> to focus · </span>Enter to send · Shift+Enter for new line
         </p>
         {charCount > maxChars * 0.5 && (
           <span
