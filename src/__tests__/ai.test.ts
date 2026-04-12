@@ -1,43 +1,79 @@
-import { describe, it, expect } from "vitest";
-import { simulateAIResponse } from "../utils/ai";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { fetchAIResponse } from "../utils/ai";
 
-describe("AI response engine", () => {
-  it("returns a non-empty string", async () => {
-    const response = await simulateAIResponse("hello");
-    expect(typeof response).toBe("string");
-    expect(response.length).toBeGreaterThan(0);
+describe("fetchAIResponse", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("returns contextual response for keyword 'minimalism'", async () => {
-    const response = await simulateAIResponse("Tell me about minimalism");
-    // The response should be from the minimalism keyword set
-    const hasMinimalismContent =
-      response.toLowerCase().includes("minimalis") ||
-      response.toLowerCase().includes("simplicity") ||
-      response.toLowerCase().includes("less");
-    expect(hasMinimalismContent).toBe(true);
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it("returns contextual response for keyword 'focus'", async () => {
-    const response = await simulateAIResponse("How can I focus better?");
-    expect(response.length).toBeGreaterThan(20);
+  it("sends a POST request to /api/chat with the message", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Welcome!" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await fetchAIResponse("hello");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, options] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("/api/chat");
+    expect(options?.method).toBe("POST");
+    expect(JSON.parse(options?.body as string)).toEqual({ message: "hello" });
+    expect(result).toBe("Welcome!");
   });
 
-  it("returns contextual response for keyword 'design'", async () => {
-    const response = await simulateAIResponse("Give me design advice");
-    expect(response.toLowerCase()).toContain("design");
+  it("returns the response string from the API", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Great question about focus." }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await fetchAIResponse("How can I focus?");
+    expect(result).toBe("Great question about focus.");
   });
 
-  it("returns contextual response for keyword 'explain'", async () => {
-    const response = await simulateAIResponse("Explain this to me");
-    expect(response.length).toBeGreaterThan(20);
+  it("throws when the API returns a non-200 status", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response("Server Error", { status: 500 }),
+    );
+
+    await expect(fetchAIResponse("test")).rejects.toThrow(
+      "API request failed with status 500",
+    );
   });
 
-  it("returns different responses for sequential calls", async ({ expect }) => {
-    const r1 = await simulateAIResponse("question a");
-    const r2 = await simulateAIResponse("question b");
-    // At least one should differ (they cycle through responses)
-    expect(typeof r1).toBe("string");
-    expect(typeof r2).toBe("string");
-  }, 10000);
+  it("throws when the API returns an empty response", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await expect(fetchAIResponse("test")).rejects.toThrow(
+      "Invalid API response: empty or missing response field",
+    );
+  });
+
+  it("throws when the API returns malformed JSON", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response("not json", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      }),
+    );
+
+    await expect(fetchAIResponse("test")).rejects.toThrow();
+  });
 });

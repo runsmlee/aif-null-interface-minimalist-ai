@@ -1,7 +1,7 @@
 import { useReducer, useCallback, useRef, useEffect } from "react";
 import type { ConversationState, ChatAction, Message } from "@/types";
 import { generateId } from "@/utils/id";
-import { simulateAIResponse } from "@/utils/ai";
+import { fetchAIResponse } from "@/utils/ai";
 import { saveMessages, loadMessages, clearMessages } from "@/utils/storage";
 
 const initialState: ConversationState = {
@@ -70,6 +70,12 @@ export function useChat() {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const abortRef = useRef(false);
   const hasRestored = useRef(false);
+  const isLoadingRef = useRef(false);
+
+  // Keep isLoadingRef in sync with state
+  useEffect(() => {
+    isLoadingRef.current = state.isLoading;
+  }, [state.isLoading]);
 
   // Restore messages from localStorage on mount
   useEffect(() => {
@@ -93,10 +99,26 @@ export function useChat() {
 
   const lastUserMessageRef = useRef<string | null>(null);
 
+  const handleResponse = useCallback(
+    (response: string) => {
+      if (!abortRef.current) {
+        dispatch({ type: "SET_STREAMING", payload: response });
+      }
+    },
+    []
+  );
+
+  const handleError = useCallback(() => {
+    dispatch({
+      type: "SET_ERROR",
+      payload: "Something went wrong. Please try again.",
+    });
+  }, []);
+
   const sendMessage = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
-      if (!trimmed || state.isLoading) return;
+      if (!trimmed || isLoadingRef.current) return;
 
       abortRef.current = false;
       lastUserMessageRef.current = trimmed;
@@ -106,40 +128,24 @@ export function useChat() {
       dispatch({ type: "SET_ERROR", payload: null });
 
       try {
-        const response = await simulateAIResponse(trimmed);
-        if (!abortRef.current) {
-          dispatch({ type: "SET_STREAMING", payload: response });
-        }
+        const response = await fetchAIResponse(trimmed);
+        handleResponse(response);
       } catch {
-        dispatch({
-          type: "SET_ERROR",
-          payload: "Something went wrong. Please try again.",
-        });
+        handleError();
       }
     },
-    [state.isLoading]
+    [handleResponse, handleError]
   );
 
   const retryLastMessage = useCallback(() => {
     const lastMsg = lastUserMessageRef.current;
-    if (lastMsg) {
-      dispatch({ type: "SET_ERROR", payload: null });
-      dispatch({ type: "SET_LOADING", payload: true });
+    if (!lastMsg) return;
 
-      simulateAIResponse(lastMsg)
-        .then((response) => {
-          if (!abortRef.current) {
-            dispatch({ type: "SET_STREAMING", payload: response });
-          }
-        })
-        .catch(() => {
-          dispatch({
-            type: "SET_ERROR",
-            payload: "Something went wrong. Please try again.",
-          });
-        });
-    }
-  }, []);
+    dispatch({ type: "SET_ERROR", payload: null });
+    dispatch({ type: "SET_LOADING", payload: true });
+
+    fetchAIResponse(lastMsg).then(handleResponse).catch(handleError);
+  }, [handleResponse, handleError]);
 
   const clearConversation = useCallback(() => {
     abortRef.current = true;

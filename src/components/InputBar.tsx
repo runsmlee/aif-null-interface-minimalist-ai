@@ -16,37 +16,33 @@ export function InputBar({ onSend, isLoading, inputRef: externalRef }: InputBarP
   const isNearLimit = charCount > maxChars * 0.9;
   const isOverLimit = charCount > maxChars;
 
+  const performSend = useCallback(() => {
+    if (!input.trim() || isLoading || isOverLimit) return;
+
+    onSend(input);
+    setInput("");
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  }, [input, isLoading, isOverLimit, onSend]);
+
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (!input.trim() || isLoading || isOverLimit) return;
-
-      onSend(input);
-      setInput("");
-
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
+      performSend();
     },
-    [input, isLoading, isOverLimit, onSend]
+    [performSend]
   );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (!input.trim() || isLoading || isOverLimit) return;
-
-        onSend(input);
-        setInput("");
-
-        if (textareaRef.current) {
-          textareaRef.current.style.height = "auto";
-        }
+        performSend();
       }
     },
-    [input, isLoading, isOverLimit, onSend]
+    [performSend]
   );
 
   const handleInput = useCallback(

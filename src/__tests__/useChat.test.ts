@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useChat } from "../hooks/useChat";
 import * as ai from "../utils/ai";
@@ -6,7 +6,7 @@ import * as ai from "../utils/ai";
 describe("useChat", () => {
   beforeEach(() => {
     window.localStorage.clear();
-    vi.spyOn(ai, "simulateAIResponse").mockResolvedValue(
+    vi.spyOn(ai, "fetchAIResponse").mockResolvedValue(
       "This is a test AI response for streaming."
     );
   });
@@ -86,7 +86,7 @@ describe("useChat", () => {
   });
 
   it("handles error state", async () => {
-    vi.spyOn(ai, "simulateAIResponse").mockRejectedValueOnce(
+    vi.spyOn(ai, "fetchAIResponse").mockRejectedValueOnce(
       new Error("Network error")
     );
 

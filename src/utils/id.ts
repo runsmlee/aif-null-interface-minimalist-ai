@@ -1,8 +1,5 @@
-let counter = 0;
-
 export function generateId(): string {
-  counter += 1;
-  return `msg-${Date.now()}-${counter}`;
+  return `msg-${crypto.randomUUID()}`;
 }
 
 export function formatTimestamp(timestamp: number): string {
