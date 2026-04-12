@@ -1,12 +1,14 @@
 import { useReducer, useCallback, useRef, useEffect } from "react";
 import type { ConversationState, ChatAction, Message } from "@/types";
+import type { ChatMessage } from "@/utils/ai";
 import { generateId } from "@/utils/id";
-import { fetchAIResponse } from "@/utils/ai";
+import { fetchAIStream } from "@/utils/ai";
 import { saveMessages, loadMessages, clearMessages } from "@/utils/storage";
 
 const initialState: ConversationState = {
   messages: [],
   isLoading: false,
+  isStreaming: false,
   error: null,
   streamingText: null,
 };
@@ -22,9 +24,26 @@ function isValidMessage(msg: unknown): msg is Message {
   );
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("rate limit") || msg.includes("429"))
+      return "Rate limit reached. Please wait a moment before trying again.";
+    if (msg.includes("network") || msg.includes("fetch"))
+      return "Network error. Please check your connection and try again.";
+    if (msg.includes("401") || msg.includes("unauthorized"))
+      return "Service authentication issue. Please try again later.";
+    if (msg.includes("not configured") || msg.includes("503"))
+      return "AI service is not configured yet. Please check back soon.";
+    if (msg.includes("empty"))
+      return "Received an empty response. Please try a different message.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
 function chatReducer(
   state: ConversationState,
-  action: ChatAction
+  action: ChatAction,
 ): ConversationState {
   switch (action.type) {
     case "ADD_USER_MESSAGE": {
@@ -47,18 +66,42 @@ function chatReducer(
         ...state,
         messages: [...state.messages, message],
         isLoading: false,
+        isStreaming: false,
       };
     }
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
+    case "SET_STREAMING_ACTIVE":
+      return {
+        ...state,
+        isStreaming: action.payload,
+        isLoading: action.payload ? false : state.isLoading,
+      };
     case "SET_ERROR":
-      return { ...state, error: action.payload, isLoading: false };
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false,
+        isStreaming: false,
+      };
     case "CLEAR_CONVERSATION":
       return initialState;
     case "RESTORE_MESSAGES":
       return { ...state, messages: action.payload };
     case "SET_STREAMING":
-      return { ...state, streamingText: action.payload, isLoading: false };
+      return {
+        ...state,
+        streamingText: action.payload,
+        isLoading: false,
+        isStreaming: false,
+      };
+    case "APPEND_STREAMING":
+      return {
+        ...state,
+        streamingText: (state.streamingText ?? "") + action.payload,
+        isLoading: false,
+        isStreaming: true,
+      };
     case "CLEAR_STREAMING":
       return { ...state, streamingText: null };
     default:
@@ -68,14 +111,18 @@ function chatReducer(
 
 export function useChat() {
   const [state, dispatch] = useReducer(chatReducer, initialState);
-  const abortRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
   const hasRestored = useRef(false);
   const isLoadingRef = useRef(false);
+  const messagesRef = useRef(state.messages);
 
-  // Keep isLoadingRef in sync with state
+  // Keep refs in sync
   useEffect(() => {
     isLoadingRef.current = state.isLoading;
   }, [state.isLoading]);
+  useEffect(() => {
+    messagesRef.current = state.messages;
+  }, [state.messages]);
 
   // Restore messages from localStorage on mount
   useEffect(() => {
@@ -99,42 +146,49 @@ export function useChat() {
 
   const lastUserMessageRef = useRef<string | null>(null);
 
-  const handleResponse = useCallback(
-    (response: string) => {
-      if (!abortRef.current) {
-        dispatch({ type: "SET_STREAMING", payload: response });
-      }
-    },
-    []
-  );
-
-  const handleError = useCallback(() => {
-    dispatch({
-      type: "SET_ERROR",
-      payload: "Something went wrong. Please try again.",
-    });
-  }, []);
-
   const sendMessage = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
       if (!trimmed || isLoadingRef.current) return;
 
-      abortRef.current = false;
       lastUserMessageRef.current = trimmed;
 
       dispatch({ type: "ADD_USER_MESSAGE", payload: trimmed });
       dispatch({ type: "SET_LOADING", payload: true });
       dispatch({ type: "SET_ERROR", payload: null });
 
+      // Build conversation history from stored messages
+      const history: ChatMessage[] = messagesRef.current.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+      history.push({ role: "user", content: trimmed });
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       try {
-        const response = await fetchAIResponse(trimmed);
-        handleResponse(response);
-      } catch {
-        handleError();
+        await fetchAIStream(
+          history,
+          (chunk) => {
+            dispatch({ type: "APPEND_STREAMING", payload: chunk });
+          },
+          { signal: controller.signal },
+        );
+        // Stream completed — streamingText now has the full text
+        // The finalizeStreaming mechanism will convert it to a message
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        dispatch({
+          type: "SET_ERROR",
+          payload: getErrorMessage(error),
+        });
+      } finally {
+        abortRef.current = null;
+        dispatch({ type: "SET_STREAMING_ACTIVE", payload: false });
       }
     },
-    [handleResponse, handleError]
+    [],
   );
 
   const retryLastMessage = useCallback(() => {
@@ -144,11 +198,40 @@ export function useChat() {
     dispatch({ type: "SET_ERROR", payload: null });
     dispatch({ type: "SET_LOADING", payload: true });
 
-    fetchAIResponse(lastMsg).then(handleResponse).catch(handleError);
-  }, [handleResponse, handleError]);
+    const history: ChatMessage[] = messagesRef.current.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+    history.push({ role: "user", content: lastMsg });
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    fetchAIStream(
+      history,
+      (chunk) => {
+        dispatch({ type: "APPEND_STREAMING", payload: chunk });
+      },
+      { signal: controller.signal },
+    )
+      .catch((error) => {
+        if (error instanceof Error && error.name === "AbortError") return;
+        dispatch({
+          type: "SET_ERROR",
+          payload: getErrorMessage(error),
+        });
+      })
+      .finally(() => {
+        abortRef.current = null;
+        dispatch({ type: "SET_STREAMING_ACTIVE", payload: false });
+      });
+  }, []);
 
   const clearConversation = useCallback(() => {
-    abortRef.current = true;
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
     dispatch({ type: "CLEAR_CONVERSATION" });
     clearMessages();
   }, []);
@@ -163,6 +246,7 @@ export function useChat() {
   return {
     messages: state.messages,
     isLoading: state.isLoading,
+    isStreaming: state.isStreaming,
     error: state.error,
     streamingText: state.streamingText,
     sendMessage,

@@ -11,6 +11,7 @@ export function ChatInterface() {
   const {
     messages,
     isLoading,
+    isStreaming,
     error,
     streamingText,
     sendMessage,
@@ -40,6 +41,7 @@ export function ChatInterface() {
         <MessageList
           messages={messages}
           isLoading={isLoading}
+          isStreaming={isStreaming}
           streamingText={streamingText}
           onSuggestionClick={sendMessage}
           onStreamingComplete={finalizeStreaming}

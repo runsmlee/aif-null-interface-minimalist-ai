@@ -7,6 +7,7 @@ import { useTypewriter } from "@/hooks/useTypewriter";
 interface MessageListProps {
   readonly messages: readonly Message[];
   readonly isLoading: boolean;
+  readonly isStreaming: boolean;
   readonly streamingText: string | null;
   readonly onSuggestionClick?: (text: string) => void;
   readonly onStreamingComplete?: () => void;
@@ -15,18 +16,25 @@ interface MessageListProps {
 export function MessageList({
   messages,
   isLoading,
+  isStreaming,
   streamingText,
   onSuggestionClick,
   onStreamingComplete,
 }: MessageListProps) {
-  const { displayedText, isComplete } = useTypewriter(streamingText, {
-    charDelay: 12,
-    onComplete: onStreamingComplete,
-  });
+  // During active streaming, show text directly (chunks arrive naturally).
+  // When stream is done but text remains (fallback), use typewriter for smooth reveal.
+  const displayText = streamingText ?? null;
+  const useTypewriterHook = !isStreaming && displayText !== null;
+  const { displayedText, isComplete } = useTypewriter(
+    useTypewriterHook ? displayText : null,
+    { charDelay: 12, onComplete: onStreamingComplete },
+  );
+
+  const shownText = useTypewriterHook ? displayedText : displayText;
 
   const memoizedDeps = useMemo(
-    () => [messages.length, isLoading, displayedText.length] as const,
-    [messages.length, isLoading, displayedText.length]
+    () => [messages.length, isLoading, shownText?.length ?? 0] as const,
+    [messages.length, isLoading, shownText?.length ?? 0],
   );
   const { containerRef } = useAutoScroll(memoizedDeps);
 
@@ -48,8 +56,8 @@ export function MessageList({
         <MessageBubble key={message.id} message={message} />
       ))}
 
-      {streamingText && displayedText.length > 0 && (
-        <StreamingBubble text={displayedText} isComplete={isComplete} />
+      {streamingText && shownText && shownText.length > 0 && (
+        <StreamingBubble text={shownText} isComplete={isComplete} />
       )}
 
       {isLoading && !streamingText && <TypingIndicator />}

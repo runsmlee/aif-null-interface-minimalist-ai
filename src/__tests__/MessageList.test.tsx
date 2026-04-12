@@ -20,12 +20,14 @@ const mockMessages: readonly Message[] = [
 
 describe("MessageList", () => {
   it("shows empty state when no messages", () => {
-    render(<MessageList messages={[]} isLoading={false} streamingText={null} />);
+    render(<MessageList messages={[]} isLoading={false} isStreaming={false}
+        streamingText={null} />);
     expect(screen.getByText("Start a conversation")).toBeInTheDocument();
   });
 
   it("renders messages correctly", () => {
-    render(<MessageList messages={mockMessages} isLoading={false} streamingText={null} />);
+    render(<MessageList messages={mockMessages} isLoading={false} isStreaming={false}
+        streamingText={null} />);
     expect(
       screen.getByText("Hello, this is a test message")
     ).toBeInTheDocument();
@@ -35,19 +37,22 @@ describe("MessageList", () => {
   });
 
   it("shows typing indicator when loading", () => {
-    render(<MessageList messages={[]} isLoading={true} streamingText={null} />);
+    render(<MessageList messages={[]} isLoading={true} isStreaming={false}
+        streamingText={null} />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("does not show empty state when there are messages", () => {
-    render(<MessageList messages={mockMessages} isLoading={false} streamingText={null} />);
+    render(<MessageList messages={mockMessages} isLoading={false} isStreaming={false}
+        streamingText={null} />);
     expect(
       screen.queryByText("Start a conversation")
     ).not.toBeInTheDocument();
   });
 
   it("has correct ARIA role", () => {
-    render(<MessageList messages={mockMessages} isLoading={false} streamingText={null} />);
+    render(<MessageList messages={mockMessages} isLoading={false} isStreaming={false}
+        streamingText={null} />);
     expect(
       screen.getByRole("log", { name: /chat messages/i })
     ).toBeInTheDocument();
@@ -59,6 +64,7 @@ describe("MessageList", () => {
       <MessageList
         messages={[]}
         isLoading={false}
+        isStreaming={false}
         streamingText={null}
         onSuggestionClick={onSuggestionClick}
       />
@@ -74,6 +80,7 @@ describe("MessageList", () => {
       <MessageList
         messages={[]}
         isLoading={false}
+        isStreaming={false}
         streamingText={null}
         onSuggestionClick={onSuggestionClick}
       />
