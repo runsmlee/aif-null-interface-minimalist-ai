@@ -3,6 +3,7 @@ import { Header } from "./Header";
 import { MessageList } from "./MessageList";
 import { InputBar } from "./InputBar";
 import { ErrorBanner } from "./ErrorBanner";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { useChat } from "@/hooks/useChat";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
@@ -11,9 +12,11 @@ export function ChatInterface() {
     messages,
     isLoading,
     error,
+    streamingText,
     sendMessage,
     clearConversation,
     retryLastMessage,
+    finalizeStreaming,
   } = useChat();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -33,11 +36,15 @@ export function ChatInterface() {
         Skip to chat input
       </a>
       <Header messageCount={messages.length} onClear={clearConversation} />
-      <MessageList
-        messages={messages}
-        isLoading={isLoading}
-        onSuggestionClick={sendMessage}
-      />
+      <ErrorBoundary>
+        <MessageList
+          messages={messages}
+          isLoading={isLoading}
+          streamingText={streamingText}
+          onSuggestionClick={sendMessage}
+          onStreamingComplete={finalizeStreaming}
+        />
+      </ErrorBoundary>
       <ErrorBanner message={error} onRetry={retryLastMessage} />
       <InputBar
         onSend={sendMessage}

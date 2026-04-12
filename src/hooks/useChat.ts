@@ -8,6 +8,7 @@ const initialState: ConversationState = {
   messages: [],
   isLoading: false,
   error: null,
+  streamingText: null,
 };
 
 function isValidMessage(msg: unknown): msg is Message {
@@ -56,6 +57,10 @@ function chatReducer(
       return initialState;
     case "RESTORE_MESSAGES":
       return { ...state, messages: action.payload };
+    case "SET_STREAMING":
+      return { ...state, streamingText: action.payload, isLoading: false };
+    case "CLEAR_STREAMING":
+      return { ...state, streamingText: null };
     default:
       return state;
   }
@@ -103,7 +108,7 @@ export function useChat() {
       try {
         const response = await simulateAIResponse(trimmed);
         if (!abortRef.current) {
-          dispatch({ type: "ADD_ASSISTANT_MESSAGE", payload: response });
+          dispatch({ type: "SET_STREAMING", payload: response });
         }
       } catch {
         dispatch({
@@ -124,7 +129,7 @@ export function useChat() {
       simulateAIResponse(lastMsg)
         .then((response) => {
           if (!abortRef.current) {
-            dispatch({ type: "ADD_ASSISTANT_MESSAGE", payload: response });
+            dispatch({ type: "SET_STREAMING", payload: response });
           }
         })
         .catch(() => {
@@ -142,12 +147,21 @@ export function useChat() {
     clearMessages();
   }, []);
 
+  const finalizeStreaming = useCallback(() => {
+    if (state.streamingText !== null) {
+      dispatch({ type: "ADD_ASSISTANT_MESSAGE", payload: state.streamingText });
+      dispatch({ type: "CLEAR_STREAMING" });
+    }
+  }, [state.streamingText]);
+
   return {
     messages: state.messages,
     isLoading: state.isLoading,
     error: state.error,
+    streamingText: state.streamingText,
     sendMessage,
     clearConversation,
     retryLastMessage,
+    finalizeStreaming,
   };
 }

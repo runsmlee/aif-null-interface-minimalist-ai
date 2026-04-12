@@ -2,23 +2,35 @@ import { useMemo } from "react";
 import type { Message } from "@/types";
 import { MessageBubble } from "./MessageBubble";
 import { useAutoScroll } from "@/hooks/useAutoScroll";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 interface MessageListProps {
   readonly messages: readonly Message[];
   readonly isLoading: boolean;
+  readonly streamingText: string | null;
   readonly onSuggestionClick?: (text: string) => void;
+  readonly onStreamingComplete?: () => void;
 }
 
 export function MessageList({
   messages,
   isLoading,
+  streamingText,
   onSuggestionClick,
+  onStreamingComplete,
 }: MessageListProps) {
+  const { displayedText, isComplete } = useTypewriter(streamingText, {
+    charDelay: 12,
+    onComplete: onStreamingComplete,
+  });
+
   const memoizedDeps = useMemo(
-    () => [messages.length, isLoading] as const,
-    [messages.length, isLoading]
+    () => [messages.length, isLoading, displayedText.length] as const,
+    [messages.length, isLoading, displayedText.length]
   );
   const { containerRef } = useAutoScroll(memoizedDeps);
+
+  const showEmptyState = messages.length === 0 && !isLoading && !streamingText;
 
   return (
     <div
@@ -28,7 +40,7 @@ export function MessageList({
       aria-label="Chat messages"
       aria-live="polite"
     >
-      {messages.length === 0 && !isLoading && (
+      {showEmptyState && (
         <EmptyState onSuggestionClick={onSuggestionClick} />
       )}
 
@@ -36,7 +48,11 @@ export function MessageList({
         <MessageBubble key={message.id} message={message} />
       ))}
 
-      {isLoading && <TypingIndicator />}
+      {streamingText && displayedText.length > 0 && (
+        <StreamingBubble text={displayedText} isComplete={isComplete} />
+      )}
+
+      {isLoading && !streamingText && <TypingIndicator />}
     </div>
   );
 }
@@ -119,6 +135,37 @@ function TypingIndicator() {
               />
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StreamingBubble({
+  text,
+  isComplete,
+}: {
+  readonly text: string;
+  readonly isComplete: boolean;
+}) {
+  return (
+    <div
+      className="flex justify-start mb-4 animate-fade-in-up"
+      role="article"
+      aria-label="Assistant is responding"
+    >
+      <div className="max-w-[85%] sm:max-w-[70%] bg-neutral-800/50 border border-neutral-700/30 text-neutral-200 rounded-2xl px-4 py-3">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+            ai
+          </span>
+        </div>
+        <div
+          className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${
+            !isComplete ? "typing-cursor" : ""
+          }`}
+        >
+          {text}
         </div>
       </div>
     </div>

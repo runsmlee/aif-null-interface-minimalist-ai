@@ -9,6 +9,7 @@ export interface ConversationState {
   readonly messages: readonly Message[];
   readonly isLoading: boolean;
   readonly error: string | null;
+  readonly streamingText: string | null;
 }
 
 export type ChatAction =
@@ -17,4 +18,6 @@ export type ChatAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "CLEAR_CONVERSATION" }
-  | { type: "RESTORE_MESSAGES"; payload: readonly Message[] };
+  | { type: "RESTORE_MESSAGES"; payload: readonly Message[] }
+  | { type: "SET_STREAMING"; payload: string }
+  | { type: "CLEAR_STREAMING" };
