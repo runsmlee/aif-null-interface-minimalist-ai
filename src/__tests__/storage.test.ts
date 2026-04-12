@@ -29,6 +29,20 @@ describe("storage", () => {
     expect(loadMessages()).toEqual([]);
   });
 
+  it("filters out invalid messages", () => {
+    const mixed = JSON.stringify([
+      { id: "1", role: "user", content: "Hello", timestamp: 1000 },
+      { id: "2" }, // missing required fields
+      { id: "3", role: "invalid", content: "Bad", timestamp: 1001 },
+      { id: "4", role: "assistant", content: "Good", timestamp: 1002 },
+    ]);
+    window.localStorage.setItem("null-interface-messages", mixed);
+    const loaded = loadMessages();
+    expect(loaded).toHaveLength(2);
+    expect(loaded[0]?.content).toBe("Hello");
+    expect(loaded[1]?.content).toBe("Good");
+  });
+
   it("clears messages", () => {
     saveMessages([{ id: "1", role: "user", content: "Hi", timestamp: 1 }]);
     clearMessages();

@@ -38,22 +38,22 @@ describe("App", () => {
   it("renders suggestion chips as buttons", () => {
     render(<App />);
     expect(
-      screen.getByRole("button", { name: /what is minimalism/i })
+      screen.getByRole("button", { name: /suggestion: what is minimalism/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /help me focus/i })
+      screen.getByRole("button", { name: /suggestion: help me focus/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /explain simply/i })
+      screen.getByRole("button", { name: /suggestion: explain simply/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /design advice/i })
+      screen.getByRole("button", { name: /suggestion: design advice/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /how to think clearly/i })
+      screen.getByRole("button", { name: /suggestion: how to think clearly/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /what makes good ux/i })
+      screen.getByRole("button", { name: /suggestion: what makes good ux/i })
     ).toBeInTheDocument();
   });
 

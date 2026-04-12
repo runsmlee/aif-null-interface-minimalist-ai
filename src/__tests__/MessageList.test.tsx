@@ -87,7 +87,7 @@ describe("MessageList", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: /what is minimalism/i })
+      screen.getByRole("button", { name: /suggestion: what is minimalism/i })
     );
     expect(onSuggestionClick).toHaveBeenCalledWith("What is minimalism?");
   });

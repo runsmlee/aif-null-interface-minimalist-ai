@@ -13,17 +13,6 @@ const initialState: ConversationState = {
   streamingText: null,
 };
 
-function isValidMessage(msg: unknown): msg is Message {
-  if (typeof msg !== "object" || msg === null) return false;
-  const m = msg as Record<string, unknown>;
-  return (
-    typeof m.id === "string" &&
-    (m.role === "user" || m.role === "assistant") &&
-    typeof m.content === "string" &&
-    typeof m.timestamp === "number"
-  );
-}
-
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     const msg = error.message.toLowerCase();
@@ -130,9 +119,8 @@ export function useChat() {
     hasRestored.current = true;
 
     const stored = loadMessages();
-    const valid: Message[] = stored.filter(isValidMessage) as Message[];
-    if (valid.length > 0) {
-      dispatch({ type: "RESTORE_MESSAGES", payload: valid });
+    if (stored.length > 0) {
+      dispatch({ type: "RESTORE_MESSAGES", payload: stored });
     }
   }, []);
 
@@ -145,6 +133,34 @@ export function useChat() {
   }, [state.messages]);
 
   const lastUserMessageRef = useRef<string | null>(null);
+
+  /** Shared streaming fetch logic used by both sendMessage and retryLastMessage. */
+  const executeStreamRequest = useCallback(
+    async (history: readonly ChatMessage[]) => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        await fetchAIStream(
+          history,
+          (chunk) => {
+            dispatch({ type: "APPEND_STREAMING", payload: chunk });
+          },
+          { signal: controller.signal },
+        );
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        dispatch({
+          type: "SET_ERROR",
+          payload: getErrorMessage(error),
+        });
+      } finally {
+        abortRef.current = null;
+        dispatch({ type: "SET_STREAMING_ACTIVE", payload: false });
+      }
+    },
+    [],
+  );
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -164,34 +180,12 @@ export function useChat() {
       }));
       history.push({ role: "user", content: trimmed });
 
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      try {
-        await fetchAIStream(
-          history,
-          (chunk) => {
-            dispatch({ type: "APPEND_STREAMING", payload: chunk });
-          },
-          { signal: controller.signal },
-        );
-        // Stream completed — streamingText now has the full text
-        // The finalizeStreaming mechanism will convert it to a message
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") return;
-        dispatch({
-          type: "SET_ERROR",
-          payload: getErrorMessage(error),
-        });
-      } finally {
-        abortRef.current = null;
-        dispatch({ type: "SET_STREAMING_ACTIVE", payload: false });
-      }
+      await executeStreamRequest(history);
     },
-    [],
+    [executeStreamRequest],
   );
 
-  const retryLastMessage = useCallback(() => {
+  const retryLastMessage = useCallback(async () => {
     const lastMsg = lastUserMessageRef.current;
     if (!lastMsg) return;
 
@@ -204,28 +198,8 @@ export function useChat() {
     }));
     history.push({ role: "user", content: lastMsg });
 
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    fetchAIStream(
-      history,
-      (chunk) => {
-        dispatch({ type: "APPEND_STREAMING", payload: chunk });
-      },
-      { signal: controller.signal },
-    )
-      .catch((error) => {
-        if (error instanceof Error && error.name === "AbortError") return;
-        dispatch({
-          type: "SET_ERROR",
-          payload: getErrorMessage(error),
-        });
-      })
-      .finally(() => {
-        abortRef.current = null;
-        dispatch({ type: "SET_STREAMING_ACTIVE", payload: false });
-      });
-  }, []);
+    await executeStreamRequest(history);
+  }, [executeStreamRequest]);
 
   const clearConversation = useCallback(() => {
     if (abortRef.current) {
