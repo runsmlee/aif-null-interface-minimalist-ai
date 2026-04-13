@@ -3,6 +3,7 @@ import type { Message } from "@/types";
 import { MessageBubble } from "./MessageBubble";
 import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { useTypewriter } from "@/hooks/useTypewriter";
+import { IconLayers } from "./Icons";
 
 interface MessageListProps {
   readonly messages: readonly Message[];
@@ -83,18 +84,7 @@ function EmptyState({
     <div className="flex flex-col items-center justify-center h-full min-h-[50vh] text-center px-4">
       <div className="mb-6" aria-hidden="true">
         <div className="w-16 h-16 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center mx-auto">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className="text-primary-500"
-            aria-hidden="true"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
+          <IconLayers className="text-primary-500" />
         </div>
       </div>
       <h2 className="text-lg font-medium text-neutral-300 mb-2">

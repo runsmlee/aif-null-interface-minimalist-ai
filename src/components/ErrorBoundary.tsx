@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
+import { IconErrorCircle } from "./Icons";
 
 interface ErrorBoundaryProps {
   readonly children: ReactNode;
@@ -46,19 +47,7 @@ export class ErrorBoundary extends Component<
             className="w-16 h-16 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center mx-auto mb-6"
             aria-hidden="true"
           >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-primary-500"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
+            <IconErrorCircle size={28} className="text-primary-500" />
           </div>
           <h2 className="text-lg font-medium text-neutral-300 mb-2">
             Something went wrong
