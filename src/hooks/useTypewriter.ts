@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useReducedMotion } from "./useReducedMotion";
 
 interface TypewriterOptions {
   readonly charDelay?: number;
@@ -15,6 +16,7 @@ export function useTypewriter(
   options: TypewriterOptions = {}
 ): TypewriterResult {
   const { charDelay = 15, onComplete } = options;
+  const prefersReducedMotion = useReducedMotion();
   const [displayedText, setDisplayedText] = useState("");
   const [isComplete, setIsComplete] = useState(true);
   const indexRef = useRef(0);
@@ -34,6 +36,14 @@ export function useTypewriter(
     if (!text || text.length === 0) {
       setDisplayedText("");
       setIsComplete(true);
+      return;
+    }
+
+    // Respect prefers-reduced-motion: show full text immediately
+    if (prefersReducedMotion) {
+      setDisplayedText(text);
+      setIsComplete(true);
+      onCompleteRef.current?.();
       return;
     }
 
@@ -61,7 +71,7 @@ export function useTypewriter(
     return () => {
       clearInterval(interval);
     };
-  }, [text, charDelay, handleComplete]);
+  }, [text, charDelay, handleComplete, prefersReducedMotion]);
 
   return { displayedText, isComplete };
 }

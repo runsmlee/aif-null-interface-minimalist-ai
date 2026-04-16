@@ -49,7 +49,7 @@ export const Header = memo(function Header({
           Null Interface
         </h1>
         <span className="text-xs text-neutral-500 font-mono hidden sm:inline">
-          v2.2
+          v2.3
         </span>
       </div>
 

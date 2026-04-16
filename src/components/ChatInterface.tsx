@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useMemo } from "react";
 import { Header } from "./Header";
 import { MessageList } from "./MessageList";
 import { InputBar } from "./InputBar";
@@ -6,6 +6,7 @@ import { ErrorBanner } from "./ErrorBanner";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useChat } from "@/hooks/useChat";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function ChatInterface() {
   const {
@@ -21,6 +22,15 @@ export function ChatInterface() {
   } = useChat();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Update document title based on conversation state
+  const documentTitle = useMemo(() => {
+    if (error) return "⚠ Null Interface — Error";
+    if (isLoading || isStreaming) return "Null Interface — Thinking…";
+    if (messages.length > 0) return `Null Interface — ${messages.length} message${messages.length === 1 ? "" : "s"}`;
+    return "Null Interface";
+  }, [messages.length, isLoading, isStreaming, error]);
+  useDocumentTitle(documentTitle);
 
   const focusInput = useCallback(() => {
     inputRef.current?.focus();

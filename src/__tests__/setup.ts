@@ -5,3 +5,16 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 import '@testing-library/jest-dom';
+
+// Mock window.matchMedia for jsdom (used by useReducedMotion hook)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
+});
