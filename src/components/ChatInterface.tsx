@@ -37,22 +37,24 @@ export function ChatInterface() {
         Skip to chat input
       </a>
       <Header messageCount={messages.length} onClear={clearConversation} />
-      <ErrorBoundary>
-        <MessageList
-          messages={messages}
+      <main className="contents">
+        <ErrorBoundary>
+          <MessageList
+            messages={messages}
+            isLoading={isLoading}
+            isStreaming={isStreaming}
+            streamingText={streamingText}
+            onSuggestionClick={sendMessage}
+            onStreamingComplete={finalizeStreaming}
+          />
+        </ErrorBoundary>
+        <ErrorBanner message={error} onRetry={retryLastMessage} />
+        <InputBar
+          onSend={sendMessage}
           isLoading={isLoading}
-          isStreaming={isStreaming}
-          streamingText={streamingText}
-          onSuggestionClick={sendMessage}
-          onStreamingComplete={finalizeStreaming}
+          inputRef={inputRef}
         />
-      </ErrorBoundary>
-      <ErrorBanner message={error} onRetry={retryLastMessage} />
-      <InputBar
-        onSend={sendMessage}
-        isLoading={isLoading}
-        inputRef={inputRef}
-      />
+      </main>
     </div>
   );
 }

@@ -54,7 +54,7 @@ export const MessageBubble = memo(function MessageBubble({
           <button
             type="button"
             onClick={handleCopy}
-            className="ml-auto opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 p-1 rounded hover:bg-neutral-700/50"
+            className="ml-auto opacity-40 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 p-1 rounded hover:bg-neutral-700/50"
             aria-label={copied ? "Copied to clipboard" : "Copy message"}
           >
             {copied ? (

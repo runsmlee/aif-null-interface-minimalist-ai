@@ -59,6 +59,11 @@ describe("App", () => {
 
   it("shows version badge on larger screens", () => {
     render(<App />);
-    expect(screen.getByText("v2.1")).toBeInTheDocument();
+    expect(screen.getByText("v2.2")).toBeInTheDocument();
+  });
+
+  it("has a main landmark for page semantics", () => {
+    render(<App />);
+    expect(screen.getByRole("main")).toBeInTheDocument();
   });
 });

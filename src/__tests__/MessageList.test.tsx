@@ -91,4 +91,66 @@ describe("MessageList", () => {
     );
     expect(onSuggestionClick).toHaveBeenCalledWith("What is minimalism?");
   });
+
+  it("renders streaming bubble when streaming text is present", () => {
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        isStreaming={true}
+        streamingText="Hello from the AI"
+      />
+    );
+    expect(
+      screen.getByRole("article", { name: /assistant is responding/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText("Hello from the AI")).toBeInTheDocument();
+  });
+
+  it("does not show empty state when streaming text is present", () => {
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        isStreaming={true}
+        streamingText="Test response"
+      />
+    );
+    expect(
+      screen.queryByText("Start a conversation")
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows typing cursor class while streaming is active", () => {
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        isStreaming={true}
+        streamingText="Test"
+      />
+    );
+    const textEl = screen.getByText("Test");
+    expect(textEl.className).toContain("typing-cursor");
+  });
+
+  it("renders messages alongside streaming bubble", () => {
+    render(
+      <MessageList
+        messages={mockMessages}
+        isLoading={false}
+        isStreaming={true}
+        streamingText="Additional response"
+      />
+    );
+    expect(
+      screen.getByText("Hello, this is a test message")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("This is a test response from the AI")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("article", { name: /assistant is responding/i })
+    ).toBeInTheDocument();
+  });
 });

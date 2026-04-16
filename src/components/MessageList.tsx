@@ -32,6 +32,8 @@ export function MessageList({
   );
 
   const shownText = useTypewriterHook ? displayedText : displayText;
+  // Typing cursor: show during active streaming or while typewriter is still revealing
+  const bubbleIsComplete = isStreaming ? false : isComplete;
 
   const memoizedDeps = useMemo(
     () => [messages.length, isLoading, shownText?.length ?? 0] as const,
@@ -58,7 +60,7 @@ export function MessageList({
       ))}
 
       {streamingText && shownText && shownText.length > 0 && (
-        <StreamingBubble text={shownText} isComplete={isComplete} />
+        <StreamingBubble text={shownText} isComplete={bubbleIsComplete} />
       )}
 
       {isLoading && !streamingText && <TypingIndicator />}
