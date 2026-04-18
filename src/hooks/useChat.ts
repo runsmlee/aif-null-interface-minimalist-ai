@@ -105,13 +105,18 @@ export function useChat() {
   const isLoadingRef = useRef(false);
   const messagesRef = useRef(state.messages);
 
-  // Keep refs in sync
+  const streamingTextRef = useRef(state.streamingText);
+
+  // Keep refs in sync with state
   useEffect(() => {
     isLoadingRef.current = state.isLoading;
   }, [state.isLoading]);
   useEffect(() => {
     messagesRef.current = state.messages;
   }, [state.messages]);
+  useEffect(() => {
+    streamingTextRef.current = state.streamingText;
+  }, [state.streamingText]);
 
   // Restore messages from localStorage on mount
   useEffect(() => {
@@ -211,11 +216,12 @@ export function useChat() {
   }, []);
 
   const finalizeStreaming = useCallback(() => {
-    if (state.streamingText !== null) {
-      dispatch({ type: "ADD_ASSISTANT_MESSAGE", payload: state.streamingText });
+    const current = streamingTextRef.current;
+    if (current !== null) {
+      dispatch({ type: "ADD_ASSISTANT_MESSAGE", payload: current });
       dispatch({ type: "CLEAR_STREAMING" });
     }
-  }, [state.streamingText]);
+  }, []);
 
   return {
     messages: state.messages,

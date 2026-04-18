@@ -49,4 +49,12 @@ describe("ChatInterface", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByRole("log")).toBeInTheDocument();
   });
+
+  it("skip link has proper styling attributes for focus state", () => {
+    render(<ChatInterface />);
+    const skipLink = screen.getByText("Skip to chat input");
+    // The skip link should be sr-only by default but visible on focus
+    expect(skipLink).toHaveClass("sr-only");
+    expect(skipLink).toHaveClass("focus:not-sr-only");
+  });
 });

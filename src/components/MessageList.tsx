@@ -50,6 +50,7 @@ export function MessageList({
       role="log"
       aria-label="Chat messages"
       aria-live="polite"
+      aria-relevant="additions"
     >
       {showEmptyState && (
         <EmptyState onSuggestionClick={onSuggestionClick} />
@@ -119,13 +120,14 @@ function TypingIndicator() {
       className="flex justify-start mb-4 animate-fade-in-up"
       role="status"
       aria-label="Assistant is typing"
+      aria-live="polite"
     >
       <div className="bg-neutral-800/50 border border-neutral-700/30 rounded-2xl px-4 py-3">
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500 mr-2">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
             ai
           </span>
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1 ml-1" aria-hidden="true">
             {[0, 1, 2].map((i) => (
               <span
                 key={i}
@@ -136,6 +138,7 @@ function TypingIndicator() {
               />
             ))}
           </div>
+          <span className="sr-only">thinking…</span>
         </div>
       </div>
     </div>
@@ -153,13 +156,18 @@ function StreamingBubble({
     <div
       className="flex justify-start mb-4 animate-fade-in-up"
       role="article"
-      aria-label="Assistant is responding"
+      aria-label={isComplete ? "Assistant response" : "Assistant is responding"}
     >
       <div className="max-w-[85%] sm:max-w-[70%] bg-neutral-800/50 border border-neutral-700/30 text-neutral-200 rounded-2xl px-4 py-3">
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
             ai
           </span>
+          {!isComplete && (
+            <span className="text-[10px] text-primary-400 animate-pulse" aria-hidden="true">
+              streaming
+            </span>
+          )}
         </div>
         <div
           className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${

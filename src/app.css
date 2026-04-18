@@ -17,6 +17,10 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
+
+  --animate-fade-in-up: fade-in-up 300ms ease-out forwards;
+  --animate-fade-in: fade-in 500ms ease-out forwards;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 }
 
 /* Smooth scrolling */
@@ -57,10 +61,11 @@ html {
   animation: blink 1s step-end infinite;
   color: var(--color-primary-500);
   font-size: 0.9em;
+  margin-left: 1px;
 }
 
 /* Fade-in animation */
-@keyframes fadeInUp {
+@keyframes fade-in-up {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -72,27 +77,44 @@ html {
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 300ms ease-out forwards;
+  animation: var(--animate-fade-in-up);
 }
 
-/* Pulse glow for the dot */
+/* Pulse glow for the header dot */
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); }
 }
 
 .pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: var(--animate-pulse-glow);
 }
 
 /* Smooth appearance for suggestion chips */
-@keyframes fadeIn {
+@keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 .animate-fade-in {
-  animation: fadeIn 500ms ease-out forwards;
+  animation: var(--animate-fade-in);
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* Reduced motion preference */
@@ -111,4 +133,9 @@ html {
 ::selection {
   background-color: var(--color-primary-500);
   color: white;
+}
+
+/* Smooth textarea resize */
+textarea {
+  transition: height 150ms ease-out;
 }

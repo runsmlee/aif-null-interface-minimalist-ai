@@ -48,4 +48,10 @@ describe("ErrorBanner", () => {
     render(<ErrorBanner message="Test error" />);
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
+
+  it("uses assertive aria-live for immediate screen reader announcement", () => {
+    render(<ErrorBanner message="Test error" />);
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveAttribute("aria-live", "assertive");
+  });
 });

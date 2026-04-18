@@ -11,6 +11,7 @@ export function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
   return (
     <div
       role="alert"
+      aria-live="assertive"
       className="mx-4 mb-2 px-4 py-2.5 bg-primary-500/10 border border-primary-500/20 rounded-xl text-sm text-primary-300 animate-fade-in-up flex items-center justify-between gap-3"
     >
       <div className="flex items-center gap-2 min-w-0">

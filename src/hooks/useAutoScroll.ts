@@ -1,5 +1,10 @@
 import { useEffect, useRef, useCallback } from "react";
 
+/**
+ * Auto-scroll hook that keeps a container scrolled to the bottom.
+ * Uses requestAnimationFrame to coalesce rapid DOM scroll operations
+ * (e.g., during streaming) into a single frame-aligned update.
+ */
 export function useAutoScroll(dependencies: readonly unknown[]) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafId = useRef(0);

@@ -11,6 +11,11 @@ interface TypewriterResult {
   readonly isComplete: boolean;
 }
 
+/**
+ * Typewriter hook that progressively reveals text character by character.
+ * Uses requestAnimationFrame for smooth, frame-aligned updates instead of
+ * setInterval, reducing layout thrash during rapid streaming updates.
+ */
 export function useTypewriter(
   text: string | null,
   options: TypewriterOptions = {}
@@ -20,6 +25,8 @@ export function useTypewriter(
   const [displayedText, setDisplayedText] = useState("");
   const [isComplete, setIsComplete] = useState(true);
   const indexRef = useRef(0);
+  const rafIdRef = useRef(0);
+  const lastTimeRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
 
   // Keep onComplete ref up to date without triggering re-renders
@@ -49,27 +56,38 @@ export function useTypewriter(
 
     // Reset for new text
     indexRef.current = 0;
+    lastTimeRef.current = 0;
     setDisplayedText("");
     setIsComplete(false);
 
-    const interval = setInterval(() => {
-      indexRef.current += 1;
-      const currentIndex = indexRef.current;
-
-      if (currentIndex >= text.length) {
-        clearInterval(interval);
-        setDisplayedText(text);
-        handleComplete();
-        return;
+    const animate = (timestamp: number): void => {
+      if (lastTimeRef.current === 0) {
+        lastTimeRef.current = timestamp;
       }
 
-      // Reveal characters in chunks for performance
-      const charsToReveal = Math.min(currentIndex, text.length);
-      setDisplayedText(text.slice(0, charsToReveal));
-    }, charDelay);
+      const elapsed = timestamp - lastTimeRef.current;
+      if (elapsed >= charDelay) {
+        // Calculate how many characters to advance based on elapsed time
+        const steps = Math.floor(elapsed / charDelay);
+        indexRef.current = Math.min(indexRef.current + steps, text.length);
+        lastTimeRef.current = timestamp - (elapsed % charDelay);
+
+        if (indexRef.current >= text.length) {
+          setDisplayedText(text);
+          handleComplete();
+          return;
+        }
+
+        setDisplayedText(text.slice(0, indexRef.current));
+      }
+
+      rafIdRef.current = requestAnimationFrame(animate);
+    };
+
+    rafIdRef.current = requestAnimationFrame(animate);
 
     return () => {
-      clearInterval(interval);
+      cancelAnimationFrame(rafIdRef.current);
     };
   }, [text, charDelay, handleComplete, prefersReducedMotion]);
 

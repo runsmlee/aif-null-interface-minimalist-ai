@@ -153,4 +153,48 @@ describe("MessageList", () => {
       screen.getByRole("article", { name: /assistant is responding/i })
     ).toBeInTheDocument();
   });
+
+  it("shows streaming label while actively streaming", () => {
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        isStreaming={true}
+        streamingText="Test response"
+      />
+    );
+    expect(screen.getByText("streaming")).toBeInTheDocument();
+  });
+
+  it("updates aria-label when streaming completes", () => {
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={false}
+        isStreaming={true}
+        streamingText="Test response"
+      />
+    );
+    // While streaming, the label says "Assistant is responding"
+    const article = screen.getByRole("article");
+    expect(article).toHaveAttribute("aria-label", "Assistant is responding");
+  });
+
+  it("has sr-only thinking text in typing indicator", () => {
+    render(
+      <MessageList
+        messages={[]}
+        isLoading={true}
+        isStreaming={false}
+        streamingText={null}
+      />
+    );
+    expect(screen.getByText("thinking…")).toBeInTheDocument();
+  });
+
+  it("log has aria-relevant attribute", () => {
+    render(<MessageList messages={mockMessages} isLoading={false} isStreaming={false} streamingText={null} />);
+    const log = screen.getByRole("log");
+    expect(log).toHaveAttribute("aria-relevant", "additions");
+  });
 });

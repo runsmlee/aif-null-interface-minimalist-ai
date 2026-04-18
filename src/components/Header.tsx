@@ -57,7 +57,7 @@ export const Header = memo(function Header({
         {messageCount > 0 && (
           <span
             className="text-xs text-neutral-500 tabular-nums"
-            aria-label={`${messageCount} messages in conversation`}
+            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"} in conversation`}
           >
             {messageCount} {messageCount === 1 ? "msg" : "msgs"}
           </span>

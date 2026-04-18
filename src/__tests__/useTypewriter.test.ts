@@ -1,10 +1,45 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useTypewriter } from "../hooks/useTypewriter";
 
 describe("useTypewriter", () => {
+  let rafCallbacks: Array<(time: number) => void>;
+  let rafTime: number;
+  let originalRaf: typeof requestAnimationFrame;
+  let originalCancelRaf: typeof cancelAnimationFrame;
+
   beforeEach(() => {
     vi.useFakeTimers();
+    // Mock requestAnimationFrame to be controllable via fake timers
+    rafCallbacks = [];
+    rafTime = 0;
+    originalRaf = window.requestAnimationFrame;
+    originalCancelRaf = window.cancelAnimationFrame;
+
+    window.requestAnimationFrame = (cb: FrameRequestCallback): number => {
+      const id = rafCallbacks.length;
+      rafCallbacks.push(cb as (time: number) => void);
+      // Schedule via setTimeout so fake timers can advance it
+      setTimeout(() => {
+        rafTime += 16; // ~60fps frame
+        if (rafCallbacks[id]) {
+          (rafCallbacks[id] as FrameRequestCallback)(rafTime);
+        }
+      }, 0);
+      return id;
+    };
+
+    window.cancelAnimationFrame = (id: number): void => {
+      if (id >= 0 && id < rafCallbacks.length) {
+        rafCallbacks[id] = () => {};
+      }
+    };
+  });
+
+  afterEach(() => {
+    window.requestAnimationFrame = originalRaf;
+    window.cancelAnimationFrame = originalCancelRaf;
+    vi.useRealTimers();
   });
 
   it("returns empty string when text is null", () => {
@@ -26,7 +61,7 @@ describe("useTypewriter", () => {
     expect(result.current.isComplete).toBe(false);
 
     act(() => {
-      vi.advanceTimersByTime(30);
+      vi.advanceTimersByTime(100);
     });
 
     expect(result.current.displayedText.length).toBeGreaterThan(0);
@@ -38,7 +73,7 @@ describe("useTypewriter", () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(200);
+      vi.advanceTimersByTime(500);
     });
 
     expect(result.current.displayedText).toBe("Hello");
@@ -52,7 +87,7 @@ describe("useTypewriter", () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(200);
+      vi.advanceTimersByTime(500);
     });
 
     expect(result.current.displayedText).toBe("First");
@@ -72,7 +107,7 @@ describe("useTypewriter", () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(200);
+      vi.advanceTimersByTime(500);
     });
 
     expect(onComplete).toHaveBeenCalledTimes(1);
@@ -83,5 +118,22 @@ describe("useTypewriter", () => {
     renderHook(() => useTypewriter(null, { onComplete }));
 
     expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it("clears animation when text changes to null", () => {
+    const { result, rerender } = renderHook(
+      ({ text }) => useTypewriter(text, { charDelay: 10 }),
+      { initialProps: { text: "Hello" } }
+    );
+
+    // Advance partially through
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+
+    // Change to null mid-animation
+    rerender({ text: null as unknown as string });
+    expect(result.current.displayedText).toBe("");
+    expect(result.current.isComplete).toBe(true);
   });
 });
