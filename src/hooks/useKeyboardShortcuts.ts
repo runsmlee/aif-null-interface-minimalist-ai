@@ -2,9 +2,10 @@ import { useEffect, useCallback } from "react";
 
 interface ShortcutOptions {
   readonly onFocusInput: () => void;
+  readonly onToggleHelp?: () => void;
 }
 
-export function useKeyboardShortcuts({ onFocusInput }: ShortcutOptions) {
+export function useKeyboardShortcuts({ onFocusInput, onToggleHelp }: ShortcutOptions) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -30,8 +31,14 @@ export function useKeyboardShortcuts({ onFocusInput }: ShortcutOptions) {
       if (e.key === "Escape" && isInputFocused) {
         target.blur();
       }
+
+      // "?" toggles the shortcuts help (only when not in an input)
+      if (e.key === "?" && !isInputFocused && onToggleHelp) {
+        e.preventDefault();
+        onToggleHelp();
+      }
     },
-    [onFocusInput],
+    [onFocusInput, onToggleHelp],
   );
 
   useEffect(() => {

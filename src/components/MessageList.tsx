@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, type RefObject } from "react";
 import type { Message } from "@/types";
 import { MessageBubble } from "./MessageBubble";
+import { ScrollToBottom } from "./ScrollToBottom";
 import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { IconLayers } from "./Icons";
@@ -13,6 +14,7 @@ interface MessageListProps {
   readonly onSuggestionClick?: (text: string) => void;
   readonly onStreamingComplete?: () => void;
   readonly onDeleteMessage?: (id: string) => void;
+  readonly containerRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function MessageList({
@@ -23,6 +25,7 @@ export function MessageList({
   onSuggestionClick,
   onStreamingComplete,
   onDeleteMessage,
+  containerRef: externalContainerRef,
 }: MessageListProps) {
   // During active streaming, show text directly (chunks arrive naturally).
   // When stream is done but text remains (fallback), use typewriter for smooth reveal.
@@ -41,7 +44,7 @@ export function MessageList({
     () => [messages.length, isLoading, shownText?.length ?? 0] as const,
     [messages.length, isLoading, shownText?.length ?? 0],
   );
-  const { containerRef } = useAutoScroll(memoizedDeps);
+  const { containerRef } = useAutoScroll(memoizedDeps, externalContainerRef);
 
   const showEmptyState = messages.length === 0 && !isLoading && !streamingText;
 
@@ -67,6 +70,7 @@ export function MessageList({
       )}
 
       {isLoading && !streamingText && <TypingIndicator />}
+      <ScrollToBottom containerRef={containerRef} />
     </div>
   );
 }

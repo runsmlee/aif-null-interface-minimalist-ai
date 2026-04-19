@@ -18,3 +18,19 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 });
+
+// Mock IntersectionObserver for jsdom (used by ScrollToBottom component)
+class MockIntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+  observe = (): void => {};
+  unobserve = (): void => {};
+  disconnect = (): void => {};
+  takeRecords = (): IntersectionObserverEntry[] => [];
+}
+
+Object.defineProperty(window, 'IntersectionObserver', {
+  writable: true,
+  value: MockIntersectionObserver,
+});

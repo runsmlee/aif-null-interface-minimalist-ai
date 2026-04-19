@@ -1,27 +1,39 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { render, screen, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ChatInterface } from "../components/ChatInterface";
 
+const mockUseChat = {
+  messages: [],
+  isLoading: false,
+  isStreaming: false,
+  error: null,
+  streamingText: null,
+  sendMessage: vi.fn(),
+  clearConversation: vi.fn(),
+  deleteMessage: vi.fn(),
+  retryLastMessage: vi.fn(),
+  finalizeStreaming: vi.fn(),
+};
+
 vi.mock("@/hooks/useChat", () => ({
-  useChat: () => ({
-    messages: [],
-    isLoading: false,
-    isStreaming: false,
-    error: null,
-    streamingText: null,
-    sendMessage: vi.fn(),
-    clearConversation: vi.fn(),
-    deleteMessage: vi.fn(),
-    retryLastMessage: vi.fn(),
-    finalizeStreaming: vi.fn(),
-  }),
+  useChat: () => mockUseChat,
 }));
 
+// Track the callback passed to useKeyboardShortcuts
+let capturedOnToggleHelp: (() => void) | undefined;
+
 vi.mock("@/hooks/useKeyboardShortcuts", () => ({
-  useKeyboardShortcuts: vi.fn(),
+  useKeyboardShortcuts: (options: { onFocusInput: () => void; onToggleHelp?: () => void }) => {
+    capturedOnToggleHelp = options.onToggleHelp;
+  },
 }));
 
 describe("ChatInterface", () => {
+  beforeEach(() => {
+    capturedOnToggleHelp = undefined;
+    vi.clearAllMocks();
+  });
+
   it("renders the main landmark", () => {
     render(<ChatInterface />);
     expect(screen.getByRole("main")).toBeInTheDocument();
@@ -62,5 +74,42 @@ describe("ChatInterface", () => {
   it("renders keyboard shortcut hints", () => {
     render(<ChatInterface />);
     expect(screen.getByText("⌘K")).toBeInTheDocument();
+  });
+
+  it("passes onToggleHelp to useKeyboardShortcuts", () => {
+    render(<ChatInterface />);
+    expect(capturedOnToggleHelp).toBeDefined();
+    expect(typeof capturedOnToggleHelp).toBe("function");
+  });
+
+  it("opens shortcuts help dialog when onToggleHelp is called", () => {
+    render(<ChatInterface />);
+    // Shortcuts help should not be visible initially
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    // Simulate the keyboard shortcut triggering the toggle
+    act(() => {
+      capturedOnToggleHelp?.();
+    });
+
+    // Dialog should now be visible
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Keyboard Shortcuts")).toBeInTheDocument();
+  });
+
+  it("closes shortcuts help dialog when onToggleHelp is called again", () => {
+    render(<ChatInterface />);
+
+    // Open it
+    act(() => {
+      capturedOnToggleHelp?.();
+    });
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Close it
+    act(() => {
+      capturedOnToggleHelp?.();
+    });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

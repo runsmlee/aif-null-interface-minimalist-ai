@@ -142,3 +142,57 @@ export const IconTrash = memo(function IconTrash({
     </svg>
   );
 });
+
+export const IconX = memo(function IconX({
+  size = 16,
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      {...svgDefaults}
+      {...props}
+      width={size}
+      height={size}
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+});
+
+export const IconArrowDown = memo(function IconArrowDown({
+  size = 16,
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      {...svgDefaults}
+      {...props}
+      width={size}
+      height={size}
+      aria-hidden="true"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <polyline points="19 12 12 19 5 12" />
+    </svg>
+  );
+});
+
+export const IconSearch = memo(function IconSearch({
+  size = 14,
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      {...svgDefaults}
+      {...props}
+      width={size}
+      height={size}
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+});

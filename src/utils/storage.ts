@@ -2,6 +2,7 @@ import type { Message } from "@/types";
 
 const STORAGE_KEY = "null-interface-messages";
 const MAX_STORAGE_SIZE = 5 * 1024 * 1024; // 5MB safety limit
+const DEBOUNCE_MS = 500;
 
 interface RawStorageMessage {
   readonly id?: unknown;
@@ -64,7 +65,7 @@ export function loadMessages(): Message[] {
     if (!serialized) return [];
     const parsed: unknown = JSON.parse(serialized);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isValidMessage);
+    return (parsed as unknown[]).filter(isValidMessage);
   } catch {
     return [];
   }
@@ -75,5 +76,26 @@ export function clearMessages(): void {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
     // Silently degrade
+  }
+}
+
+/** Debounced save — coalesces rapid state changes into a single write. */
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function debouncedSave(messages: readonly Message[]): void {
+  if (saveTimer !== null) {
+    clearTimeout(saveTimer);
+  }
+  saveTimer = setTimeout(() => {
+    saveMessages(messages);
+    saveTimer = null;
+  }, DEBOUNCE_MS);
+}
+
+/** Cancel any pending debounced save (useful during cleanup). */
+export function cancelPendingSave(): void {
+  if (saveTimer !== null) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
   }
 }

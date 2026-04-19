@@ -1,9 +1,10 @@
-import { useRef, useCallback, useMemo } from "react";
+import { useRef, useCallback, useMemo, useState } from "react";
 import { Header } from "./Header";
 import { MessageList } from "./MessageList";
 import { InputBar } from "./InputBar";
 import { ErrorBanner } from "./ErrorBanner";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { ShortcutsHelp } from "./ShortcutsHelp";
 import { useChat } from "@/hooks/useChat";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -24,6 +25,7 @@ export function ChatInterface() {
   } = useChat();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // Compute conversation stats
   const stats = useMemo(() => {
@@ -45,7 +47,11 @@ export function ChatInterface() {
     inputRef.current?.focus();
   }, []);
 
-  useKeyboardShortcuts({ onFocusInput: focusInput });
+  const toggleHelp = useCallback(() => {
+    setIsHelpOpen((prev) => !prev);
+  }, []);
+
+  useKeyboardShortcuts({ onFocusInput: focusInput, onToggleHelp: toggleHelp });
 
   const handleExport = useCallback(() => {
     if (messages.length === 0) return;
@@ -68,7 +74,7 @@ export function ChatInterface() {
         onClear={clearConversation}
         onExport={handleExport}
       />
-      <main className="contents">
+      <main className="flex-1 flex flex-col min-h-0" role="main">
         <ErrorBoundary>
           <MessageList
             messages={messages}
@@ -87,6 +93,7 @@ export function ChatInterface() {
           inputRef={inputRef}
         />
       </main>
+      <ShortcutsHelp isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 }
