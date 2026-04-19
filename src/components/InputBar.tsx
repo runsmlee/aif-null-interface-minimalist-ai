@@ -92,7 +92,7 @@ export function InputBar({ onSend, isLoading, inputRef: externalRef }: InputBarP
       </div>
       <div className="flex items-center justify-between mt-2 px-1" id="input-hint">
         <p className="text-[10px] text-neutral-600">
-          <span className="hidden sm:inline">Press <kbd className="px-1 py-0.5 bg-neutral-800/50 rounded text-neutral-500 font-mono">/</kbd> to focus · </span>Enter to send · Shift+Enter for new line
+          <span className="hidden sm:inline">Press <kbd className="px-1 py-0.5 bg-neutral-800/50 rounded text-neutral-500 font-mono">/</kbd> or <kbd className="px-1 py-0.5 bg-neutral-800/50 rounded text-neutral-500 font-mono">⌘K</kbd> to focus · </span>Enter to send · Shift+Enter for new line
         </p>
         {charCount > maxChars * 0.5 && (
           <span

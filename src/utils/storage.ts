@@ -1,21 +1,57 @@
 import type { Message } from "@/types";
 
 const STORAGE_KEY = "null-interface-messages";
+const MAX_STORAGE_SIZE = 5 * 1024 * 1024; // 5MB safety limit
+
+interface RawStorageMessage {
+  readonly id?: unknown;
+  readonly role?: unknown;
+  readonly content?: unknown;
+  readonly timestamp?: unknown;
+}
 
 function isValidMessage(msg: unknown): msg is Message {
   if (typeof msg !== "object" || msg === null) return false;
-  const m = msg as Record<string, unknown>;
+  const m = msg as RawStorageMessage;
   return (
     typeof m.id === "string" &&
+    m.id.length > 0 &&
     (m.role === "user" || m.role === "assistant") &&
     typeof m.content === "string" &&
-    typeof m.timestamp === "number"
+    typeof m.timestamp === "number" &&
+    m.timestamp > 0 &&
+    Number.isFinite(m.timestamp)
   );
+}
+
+function sanitizeContent(content: string): string {
+  // Truncate extremely long content as a safety measure
+  const MAX_CONTENT_LENGTH = 100_000;
+  if (content.length > MAX_CONTENT_LENGTH) {
+    return content.slice(0, MAX_CONTENT_LENGTH);
+  }
+  return content;
 }
 
 export function saveMessages(messages: readonly Message[]): void {
   try {
-    const serialized = JSON.stringify(messages);
+    const sanitized = messages.map((m) => ({
+      ...m,
+      content: sanitizeContent(m.content),
+    }));
+    const serialized = JSON.stringify(sanitized);
+
+    // Safety check: don't write excessively large data
+    if (serialized.length > MAX_STORAGE_SIZE) {
+      console.warn(
+        `Storage limit exceeded (${Math.round(serialized.length / 1024)}KB). Truncating to recent messages.`,
+      );
+      // Keep only the last 100 messages
+      const truncated = sanitized.slice(-100);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(truncated));
+      return;
+    }
+
     window.localStorage.setItem(STORAGE_KEY, serialized);
   } catch {
     // Storage full or unavailable — silently degrade

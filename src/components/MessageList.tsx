@@ -12,6 +12,7 @@ interface MessageListProps {
   readonly streamingText: string | null;
   readonly onSuggestionClick?: (text: string) => void;
   readonly onStreamingComplete?: () => void;
+  readonly onDeleteMessage?: (id: string) => void;
 }
 
 export function MessageList({
@@ -21,6 +22,7 @@ export function MessageList({
   streamingText,
   onSuggestionClick,
   onStreamingComplete,
+  onDeleteMessage,
 }: MessageListProps) {
   // During active streaming, show text directly (chunks arrive naturally).
   // When stream is done but text remains (fallback), use typewriter for smooth reveal.
@@ -57,7 +59,7 @@ export function MessageList({
       )}
 
       {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+        <MessageBubble key={message.id} message={message} onDelete={onDeleteMessage} />
       ))}
 
       {streamingText && shownText && shownText.length > 0 && (

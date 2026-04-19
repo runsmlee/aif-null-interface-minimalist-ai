@@ -11,8 +11,11 @@ Users who want a clean, no-frills AI chat experience that prioritizes readabilit
 2. **Message History** — Conversations persist across sessions via localStorage
 3. **Streaming Responses** — Real-time SSE streaming with typewriter effect
 4. **Error Recovery** — Graceful error handling with retry capabilities
-5. **Keyboard Shortcuts** — `/` to focus input, `Esc` to blur, `Enter` to send
+5. **Keyboard Shortcuts** — `/` to focus input, `Cmd/Ctrl+K` to focus input, `Esc` to blur, `Enter` to send
 6. **Accessibility** — WCAG 2.1 AA compliant with semantic HTML, ARIA labels, and keyboard navigation
+7. **Message Management** — Delete individual messages from the conversation
+8. **Conversation Export** — Export conversations as JSON for backup
+9. **Conversation Statistics** — Real-time word count and message count in header
 
 ## Design Tokens
 - **Primary Color:** #EF4444 (red)
@@ -27,14 +30,18 @@ Users who want a clean, no-frills AI chat experience that prioritizes readabilit
 - Vitest + React Testing Library
 
 ## Acceptance Criteria
-- [ ] App renders without crashing
-- [ ] Users can type and send messages
-- [ ] Messages display with correct role indicators (user/ai)
-- [ ] Streaming responses show with typewriter effect
-- [ ] Error states display with retry option
-- [ ] Conversation can be cleared (with confirmation)
-- [ ] Messages persist across page reloads via localStorage
-- [ ] Keyboard shortcuts work (`/` focus, `Esc` blur, `Enter` send)
-- [ ] All interactive elements have accessible labels
-- [ ] Build passes with zero TypeScript errors
-- [ ] All tests pass
+- [x] App renders without crashing
+- [x] Users can type and send messages
+- [x] Messages display with correct role indicators (user/ai)
+- [x] Streaming responses show with typewriter effect
+- [x] Error states display with retry option
+- [x] Conversation can be cleared (with confirmation)
+- [x] Messages persist across page reloads via localStorage
+- [x] Keyboard shortcuts work (`/` focus, `Cmd/Ctrl+K` focus, `Esc` blur, `Enter` send)
+- [x] All interactive elements have accessible labels
+- [x] Build passes with zero TypeScript errors
+- [x] All tests pass
+- [x] Users can delete individual messages
+- [x] Users can export conversations as JSON
+- [x] Conversation statistics (word count) are visible in the header
+- [x] Mobile-friendly touch targets (minimum 44px)

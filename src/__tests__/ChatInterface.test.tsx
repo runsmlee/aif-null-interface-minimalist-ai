@@ -11,6 +11,7 @@ vi.mock("@/hooks/useChat", () => ({
     streamingText: null,
     sendMessage: vi.fn(),
     clearConversation: vi.fn(),
+    deleteMessage: vi.fn(),
     retryLastMessage: vi.fn(),
     finalizeStreaming: vi.fn(),
   }),
@@ -56,5 +57,10 @@ describe("ChatInterface", () => {
     // The skip link should be sr-only by default but visible on focus
     expect(skipLink).toHaveClass("sr-only");
     expect(skipLink).toHaveClass("focus:not-sr-only");
+  });
+
+  it("renders keyboard shortcut hints", () => {
+    render(<ChatInterface />);
+    expect(screen.getByText("⌘K")).toBeInTheDocument();
   });
 });

@@ -93,6 +93,11 @@ function chatReducer(
       };
     case "CLEAR_STREAMING":
       return { ...state, streamingText: null };
+    case "DELETE_MESSAGE":
+      return {
+        ...state,
+        messages: state.messages.filter((m) => m.id !== action.payload),
+      };
     default:
       return state;
   }
@@ -215,6 +220,10 @@ export function useChat() {
     clearMessages();
   }, []);
 
+  const deleteMessage = useCallback((id: string) => {
+    dispatch({ type: "DELETE_MESSAGE", payload: id });
+  }, []);
+
   const finalizeStreaming = useCallback(() => {
     const current = streamingTextRef.current;
     if (current !== null) {
@@ -231,6 +240,7 @@ export function useChat() {
     streamingText: state.streamingText,
     sendMessage,
     clearConversation,
+    deleteMessage,
     retryLastMessage,
     finalizeStreaming,
   };

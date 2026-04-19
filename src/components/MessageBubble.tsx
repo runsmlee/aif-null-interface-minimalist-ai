@@ -1,14 +1,16 @@
 import { memo, useState, useCallback } from "react";
 import type { Message } from "@/types";
 import { formatTimestamp } from "@/utils/id";
-import { IconCopy, IconCheck } from "./Icons";
+import { IconCopy, IconCheck, IconTrash } from "./Icons";
 
 interface MessageBubbleProps {
   readonly message: Message;
+  readonly onDelete?: (id: string) => void;
 }
 
 export const MessageBubble = memo(function MessageBubble({
   message,
+  onDelete,
 }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
@@ -22,6 +24,10 @@ export const MessageBubble = memo(function MessageBubble({
       // Clipboard API not available
     }
   }, [message.content]);
+
+  const handleDelete = useCallback(() => {
+    onDelete?.(message.id);
+  }, [onDelete, message.id]);
 
   return (
     <div
@@ -63,6 +69,17 @@ export const MessageBubble = memo(function MessageBubble({
               <IconCopy className="text-neutral-500" />
             )}
           </button>
+          {/* Delete button — appears on hover */}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="opacity-40 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 p-1 rounded hover:bg-neutral-700/50"
+              aria-label={`Delete message: ${message.content.slice(0, 50)}`}
+            >
+              <IconTrash className="text-neutral-500 hover:text-primary-400" />
+            </button>
+          )}
         </div>
         <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
           {message.content}

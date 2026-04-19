@@ -23,4 +23,5 @@ export type ChatAction =
   | { type: "RESTORE_MESSAGES"; payload: readonly Message[] }
   | { type: "SET_STREAMING"; payload: string }
   | { type: "APPEND_STREAMING"; payload: string }
-  | { type: "CLEAR_STREAMING" };
+  | { type: "CLEAR_STREAMING" }
+  | { type: "DELETE_MESSAGE"; payload: string };

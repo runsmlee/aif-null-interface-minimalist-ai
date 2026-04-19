@@ -7,6 +7,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { useChat } from "@/hooks/useChat";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { countWords, getDuration, exportAsJson, downloadFile } from "@/utils/export";
 
 export function ChatInterface() {
   const {
@@ -17,11 +18,19 @@ export function ChatInterface() {
     streamingText,
     sendMessage,
     clearConversation,
+    deleteMessage,
     retryLastMessage,
     finalizeStreaming,
   } = useChat();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Compute conversation stats
+  const stats = useMemo(() => {
+    const wordCount = countWords(messages);
+    const duration = getDuration(messages);
+    return { wordCount, duration };
+  }, [messages]);
 
   // Update document title based on conversation state
   const documentTitle = useMemo(() => {
@@ -38,6 +47,13 @@ export function ChatInterface() {
 
   useKeyboardShortcuts({ onFocusInput: focusInput });
 
+  const handleExport = useCallback(() => {
+    if (messages.length === 0) return;
+    const json = exportAsJson(messages);
+    const date = new Date().toISOString().split("T")[0];
+    downloadFile(json, `null-interface-${date}.json`, "application/json");
+  }, [messages]);
+
   return (
     <div className="flex flex-col h-dvh max-h-dvh bg-neutral-950">
       <a
@@ -46,7 +62,12 @@ export function ChatInterface() {
       >
         Skip to chat input
       </a>
-      <Header messageCount={messages.length} onClear={clearConversation} />
+      <Header
+        messageCount={messages.length}
+        wordCount={stats.wordCount}
+        onClear={clearConversation}
+        onExport={handleExport}
+      />
       <main className="contents">
         <ErrorBoundary>
           <MessageList
@@ -56,6 +77,7 @@ export function ChatInterface() {
             streamingText={streamingText}
             onSuggestionClick={sendMessage}
             onStreamingComplete={finalizeStreaming}
+            onDeleteMessage={deleteMessage}
           />
         </ErrorBoundary>
         <ErrorBanner message={error} onRetry={retryLastMessage} />

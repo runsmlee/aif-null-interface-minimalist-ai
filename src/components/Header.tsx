@@ -1,13 +1,18 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
+import { IconDownload } from "./Icons";
 
 interface HeaderProps {
   readonly messageCount: number;
+  readonly wordCount: number;
   readonly onClear: () => void;
+  readonly onExport: () => void;
 }
 
 export const Header = memo(function Header({
   messageCount,
+  wordCount,
   onClear,
+  onExport,
 }: HeaderProps) {
   const [confirmClear, setConfirmClear] = useState(false);
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -49,18 +54,37 @@ export const Header = memo(function Header({
           Null Interface
         </h1>
         <span className="text-xs text-neutral-500 font-mono hidden sm:inline">
-          v2.3
+          v2.4
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {messageCount > 0 && (
           <span
-            className="text-xs text-neutral-500 tabular-nums"
-            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"} in conversation`}
+            className="text-xs text-neutral-500 tabular-nums hidden sm:inline-block"
+            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"}, ${wordCount} words`}
           >
-            {messageCount} {messageCount === 1 ? "msg" : "msgs"}
+            {messageCount} {messageCount === 1 ? "msg" : "msgs"} · {wordCount} words
           </span>
+        )}
+        {messageCount > 0 && (
+          <span
+            className="text-xs text-neutral-500 tabular-nums sm:hidden"
+            aria-label={`${messageCount} messages, ${wordCount} words`}
+          >
+            {messageCount}{messageCount === 1 ? "msg" : "msgs"}
+          </span>
+        )}
+        {messageCount > 0 && (
+          <button
+            type="button"
+            onClick={onExport}
+            className="text-xs text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 px-2 py-2 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-500"
+            aria-label="Export conversation"
+            title="Export conversation as JSON"
+          >
+            <IconDownload size={14} />
+          </button>
         )}
         <button
           onClick={handleClearClick}

@@ -239,4 +239,45 @@ describe("useChat", () => {
 
     expect(ai.fetchAIStream).toHaveBeenCalledTimes(2);
   });
+
+  it("deleteMessage removes a specific message by id", async () => {
+    const { result } = renderHook(() => useChat());
+
+    await act(async () => {
+      await result.current.sendMessage("Hello");
+    });
+
+    act(() => {
+      result.current.finalizeStreaming();
+    });
+
+    expect(result.current.messages.length).toBe(2);
+
+    const userMsgId = result.current.messages[0]?.id!;
+    act(() => {
+      result.current.deleteMessage(userMsgId);
+    });
+
+    expect(result.current.messages.length).toBe(1);
+    expect(result.current.messages[0]?.role).toBe("assistant");
+  });
+
+  it("deleteMessage handles non-existent id gracefully", async () => {
+    const { result } = renderHook(() => useChat());
+
+    await act(async () => {
+      await result.current.sendMessage("Hello");
+    });
+
+    act(() => {
+      result.current.finalizeStreaming();
+    });
+
+    const countBefore = result.current.messages.length;
+    act(() => {
+      result.current.deleteMessage("non-existent-id");
+    });
+
+    expect(result.current.messages.length).toBe(countBefore);
+  });
 });

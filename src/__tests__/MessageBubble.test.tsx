@@ -62,4 +62,27 @@ describe("MessageBubble", () => {
 
     expect(writeTextMock).toHaveBeenCalledWith("Hello from assistant");
   });
+
+  it("does not show delete button when onDelete is not provided", () => {
+    render(<MessageBubble message={assistantMessage} />);
+    expect(
+      screen.queryByRole("button", { name: /delete message/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows delete button when onDelete is provided", () => {
+    const onDelete = vi.fn();
+    render(<MessageBubble message={assistantMessage} onDelete={onDelete} />);
+    expect(
+      screen.getByRole("button", { name: /delete message/i })
+    ).toBeInTheDocument();
+  });
+
+  it("calls onDelete with message id when delete is clicked", () => {
+    const onDelete = vi.fn();
+    render(<MessageBubble message={assistantMessage} onDelete={onDelete} />);
+    const deleteBtn = screen.getByRole("button", { name: /delete message/i });
+    fireEvent.click(deleteBtn);
+    expect(onDelete).toHaveBeenCalledWith("msg-2");
+  });
 });

@@ -43,6 +43,28 @@ describe("storage", () => {
     expect(loaded[1]?.content).toBe("Good");
   });
 
+  it("filters out messages with empty id", () => {
+    const data = JSON.stringify([
+      { id: "", role: "user", content: "No ID", timestamp: 1000 },
+      { id: "valid", role: "user", content: "Valid", timestamp: 1001 },
+    ]);
+    window.localStorage.setItem("null-interface-messages", data);
+    const loaded = loadMessages();
+    expect(loaded).toHaveLength(1);
+    expect(loaded[0]?.content).toBe("Valid");
+  });
+
+  it("filters out messages with zero timestamp", () => {
+    const data = JSON.stringify([
+      { id: "1", role: "user", content: "No time", timestamp: 0 },
+      { id: "2", role: "user", content: "Has time", timestamp: 1000 },
+    ]);
+    window.localStorage.setItem("null-interface-messages", data);
+    const loaded = loadMessages();
+    expect(loaded).toHaveLength(1);
+    expect(loaded[0]?.content).toBe("Has time");
+  });
+
   it("clears messages", () => {
     saveMessages([{ id: "1", role: "user", content: "Hi", timestamp: 1 }]);
     clearMessages();

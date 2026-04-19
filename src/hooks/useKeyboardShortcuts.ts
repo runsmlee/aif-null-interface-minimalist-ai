@@ -20,12 +20,18 @@ export function useKeyboardShortcuts({ onFocusInput }: ShortcutOptions) {
         onFocusInput();
       }
 
+      // Cmd/Ctrl+K also focuses the input (works even in input)
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        onFocusInput();
+      }
+
       // Escape blurs the current input
       if (e.key === "Escape" && isInputFocused) {
         target.blur();
       }
     },
-    [onFocusInput]
+    [onFocusInput],
   );
 
   useEffect(() => {
