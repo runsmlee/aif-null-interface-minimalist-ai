@@ -25,7 +25,7 @@ export function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="flex-shrink-0 text-xs text-primary-400 hover:text-primary-300 bg-primary-500/10 hover:bg-primary-500/20 px-3 py-1.5 rounded-lg transition-colors duration-200 min-h-[32px] focus-visible:outline-2 focus-visible:outline-primary-500"
+          className="flex-shrink-0 text-xs text-primary-400 hover:text-primary-300 bg-primary-500/10 hover:bg-primary-500/20 px-3 py-1.5 rounded-lg transition-colors duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-500"
           aria-label="Retry last message"
         >
           Retry

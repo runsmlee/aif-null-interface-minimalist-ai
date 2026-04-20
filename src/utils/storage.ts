@@ -59,13 +59,18 @@ export function saveMessages(messages: readonly Message[]): void {
   }
 }
 
+/** Validate and narrow an unknown array into typed Message array. */
+function validateMessageArray(raw: unknown): Message[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(isValidMessage);
+}
+
 export function loadMessages(): Message[] {
   try {
     const serialized = window.localStorage.getItem(STORAGE_KEY);
     if (!serialized) return [];
     const parsed: unknown = JSON.parse(serialized);
-    if (!Array.isArray(parsed)) return [];
-    return (parsed as unknown[]).filter(isValidMessage);
+    return validateMessageArray(parsed);
   } catch {
     return [];
   }
@@ -79,23 +84,35 @@ export function clearMessages(): void {
   }
 }
 
-/** Debounced save — coalesces rapid state changes into a single write. */
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
+/**
+ * Encapsulated debounce timer — avoids leaking module-level mutable state
+ * across test runs or hot-module-reloading boundaries.
+ */
+const debounceState = {
+  timer: null as ReturnType<typeof setTimeout> | null,
 
+  cancel(): void {
+    if (this.timer !== null) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+  },
+
+  schedule(fn: () => void, ms: number): void {
+    this.cancel();
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      fn();
+    }, ms);
+  },
+};
+
+/** Debounced save — coalesces rapid state changes into a single write. */
 export function debouncedSave(messages: readonly Message[]): void {
-  if (saveTimer !== null) {
-    clearTimeout(saveTimer);
-  }
-  saveTimer = setTimeout(() => {
-    saveMessages(messages);
-    saveTimer = null;
-  }, DEBOUNCE_MS);
+  debounceState.schedule(() => saveMessages(messages), DEBOUNCE_MS);
 }
 
 /** Cancel any pending debounced save (useful during cleanup). */
 export function cancelPendingSave(): void {
-  if (saveTimer !== null) {
-    clearTimeout(saveTimer);
-    saveTimer = null;
-  }
+  debounceState.cancel();
 }
