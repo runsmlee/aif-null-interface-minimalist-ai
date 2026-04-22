@@ -31,6 +31,80 @@ const STOP_WORDS: ReadonlySet<string> = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// Domain detection
+// ---------------------------------------------------------------------------
+type Domain = "design" | "technology" | "productivity" | "creativity" | "philosophy" | "general";
+
+const DOMAIN_KEYWORDS: Readonly<Record<Domain, readonly string[]>> = {
+  design: ["design", "ui", "ux", "layout", "typography", "color", "interface", "aesthetic", "visual", "brand", "style", "font", "spacing", "grid", "component", "wireframe"],
+  technology: ["code", "programming", "software", "app", "api", "framework", "react", "javascript", "typescript", "database", "algorithm", "web", "server", "frontend", "backend", "debug", "deploy", "build", "developer"],
+  productivity: ["focus", "productivity", "workflow", "efficiency", "organize", "plan", "goal", "task", "time", "manage", "habit", "routine", "schedule", "priority", "deadline", "procrastinat"],
+  creativity: ["creative", "inspiration", "idea", "innovate", "art", "music", "writing", "create", "imagine", "brainstorm", "sketch", "craft", "invent"],
+  philosophy: ["think", "meaning", "purpose", "philosophy", "life", "mind", "consciousness", "truth", "wisdom", "understand", "believe", "reason", "ethic", "moral", "exist"],
+  general: [],
+};
+
+const DOMAIN_TIPS: Readonly<Record<Domain, readonly string[]>> = {
+  design: [
+    "\n💡 Design tip: The best interface is the one you don't notice. If users think about the design, the design has failed.",
+    "\n💡 Design tip: White space is not empty space — it's the breathing room that makes content feel intentional.",
+    "\n💡 Design tip: Constraints breed creativity. A limited palette forces more thoughtful use of color.",
+  ],
+  technology: [
+    "\n💡 Tech tip: Read error messages carefully. Most bugs reveal their fix in the first three lines of the stack trace.",
+    "\n💡 Tech tip: Write code for the next person. That person is usually you, six months from now.",
+    "\n💡 Tech tip: The best architecture is the simplest one that works. Premature optimization creates more problems than it solves.",
+  ],
+  productivity: [
+    "\n💡 Focus tip: Single-tasking is a superpower. One thing at a time, with full attention, always beats multitasking.",
+    "\n💡 Focus tip: The two-minute rule: if something takes less than two minutes, do it now instead of adding it to a list.",
+    "\n💡 Focus tip: Energy management matters more than time management. Do your hardest work when your mind is sharpest.",
+  ],
+  creativity: [
+    "\n💡 Creativity tip: Constraints are catalysts. The most creative solutions emerge from the tightest boundaries.",
+    "\n💡 Creativity tip: Capture ideas immediately. The mind is a sieve, not a vault — inspiration fades in seconds.",
+    "\n💡 Creativity tip: Cross-pollinate. The most original ideas come from connecting concepts across different fields.",
+  ],
+  philosophy: [
+    "\n💡 Thought: The unexamined life is not worth living, but the over-examined life is not worth living either. Find the balance.",
+    "\n💡 Thought: Clarity comes from action, not contemplation. You understand by doing, not by thinking about doing.",
+    "\n💡 Thought: The best questions don't have answers — they have better questions.",
+  ],
+  general: [],
+};
+
+/** Detect the topical domain from extracted keywords. */
+export function detectDomain(keywords: readonly string[]): Domain {
+  for (const [domain, kws] of Object.entries(DOMAIN_KEYWORDS)) {
+    if (domain === "general") continue;
+    for (const kw of keywords) {
+      if (kws.includes(kw)) return domain as Domain;
+    }
+  }
+  return "general";
+}
+
+/** Deterministic selection from an array based on input string hash. */
+function pickVariation<T>(items: readonly T[], seed: string): T {
+  if (items.length === 0) throw new Error("pickVariation: items must not be empty");
+  if (items.length === 1) return items[0]!;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+  }
+  return items[Math.abs(hash) % items.length]!;
+}
+
+function appendDomainTip(response: string, keywords: readonly string[]): string {
+  const domain = detectDomain(keywords);
+  if (domain === "general") return response;
+  const tips = DOMAIN_TIPS[domain];
+  if (tips.length === 0) return response;
+  const tip = pickVariation(tips, keywords.join(" "));
+  return response + tip;
+}
+
+// ---------------------------------------------------------------------------
 // Sentiment lexicons
 // ---------------------------------------------------------------------------
 const POSITIVE_WORDS: ReadonlySet<string> = new Set([
@@ -159,25 +233,47 @@ function formatTopic(keywords: readonly string[]): string {
 export function generateResponse(analysis: TextAnalysis): string {
   const topic = formatTopic(analysis.keywords);
 
+  let response: string;
   switch (analysis.intent) {
     case "greeting":
-      return buildGreeting();
+      response = buildGreeting();
+      break;
     case "question":
-      return buildQuestion(analysis, topic);
+      response = buildQuestion(analysis, topic);
+      break;
     case "imperative":
-      return buildImperative(analysis, topic);
+      response = buildImperative(analysis, topic);
+      break;
     case "statement":
-      return buildStatement(analysis, topic);
+      response = buildStatement(analysis, topic);
+      break;
   }
+
+  return appendDomainTip(response, analysis.keywords);
 }
 
 function buildGreeting(): string {
-  return (
-    "Welcome to Null Interface.\n\n" +
-    "I'm designed to help you think clearly and act deliberately. " +
-    "No clutter, no noise — just focused conversation.\n\n" +
-    "What would you like to explore?"
-  );
+  const greetings = [
+    (
+      "Welcome to Null Interface.\n\n" +
+      "I'm designed to help you think clearly and act deliberately. " +
+      "No clutter, no noise — just focused conversation.\n\n" +
+      "What would you like to explore?"
+    ),
+    (
+      "Welcome to Null Interface.\n\n" +
+      "This is a space for clear thinking. Ask questions, explore ideas, " +
+      "or just think out loud — I'm here to help you sharpen your thoughts.\n\n" +
+      "What's on your mind?"
+    ),
+    (
+      "Welcome to Null Interface.\n\n" +
+      "Think of me as a thinking partner — someone who helps you see things " +
+      "from a different angle and find clarity in complexity.\n\n" +
+      "Where shall we start?"
+    ),
+  ];
+  return pickVariation(greetings, "greeting-welcome");
 }
 
 function buildQuestion(a: TextAnalysis, topic: string): string {
@@ -221,17 +317,39 @@ function buildQuestion(a: TextAnalysis, topic: string): string {
     );
   }
 
-  // Standard question
+  // Standard question — varied templates based on input
   const k0 = keywords[0] || topic;
-  return (
-    `Let me think about ${topic} carefully.\n\n` +
-    `The question you're asking has multiple layers. At the surface level, it's about ${k0}. ` +
-    "But underneath, I think what you're really exploring is the relationship between " +
-    `${k0} and how it connects to the bigger picture.\n\n` +
-    "Here's a useful framework: start with what you know for certain, identify the critical " +
-    "unknown, and design the smallest experiment that could eliminate that unknown.\n\n" +
-    "What's the one thing you'd need to know to move forward?"
-  );
+  const questionTemplates = [
+    (
+      `Let me think about ${topic} carefully.\n\n` +
+      `The question you're asking has multiple layers. At the surface level, it's about ${k0}. ` +
+      "But underneath, I think what you're really exploring is the relationship between " +
+      `${k0} and how it connects to the bigger picture.\n\n` +
+      "Here's a useful framework: start with what you know for certain, identify the critical " +
+      "unknown, and design the smallest experiment that could eliminate that unknown.\n\n" +
+      "What's the one thing you'd need to know to move forward?"
+    ),
+    (
+      `Interesting question about ${topic}.\n\n` +
+      `There are two ways to approach ${k0}: the conventional path and the principled path. ` +
+      "The conventional path follows established best practices. The principled path starts " +
+      "from first principles — what do we know to be true, independent of what everyone else does?\n\n" +
+      "I'd suggest starting with first principles. It takes more effort upfront, " +
+      "but the insights you gain will be more durable and more uniquely yours.\n\n" +
+      "What does your intuition tell you about this?"
+    ),
+    (
+      `That's a question worth sitting with.\n\n` +
+      `When it comes to ${topic}, most advice falls into one of two traps: being too abstract ` +
+      "(theoretical frameworks that don't help in practice) or too tactical (step-by-step guides " +
+      `that miss the bigger picture).\n\n` +
+      `The sweet spot is a mental model — a simple way of thinking about ${k0} that guides ` +
+      "your decisions without dictating them. The best mental models are the ones you can " +
+      "explain in one sentence.\n\n" +
+      "Can you describe your current understanding in one sentence?"
+    ),
+  ];
+  return pickVariation(questionTemplates, `q-${topic}`);
 }
 
 function buildImperative(a: TextAnalysis, topic: string): string {
@@ -276,15 +394,36 @@ function buildStatement(a: TextAnalysis, topic: string): string {
     );
   }
 
-  // Neutral
+  // Neutral — varied templates based on input
   const k0 = keywords[0] || "this";
-  return (
-    `That's an interesting point about ${topic}.\n\n` +
-    `Let me reflect that back and add a layer: the interesting thing about ${k0} ` +
-    "is that it connects to a broader pattern. Most of the challenges we face " +
-    "aren't isolated — they're symptoms of underlying structures.\n\n" +
-    "When you notice a pattern like this, the most powerful question is: " +
-    "what's the simplest change that would shift the entire system?\n\n" +
-    "Often the answer is smaller than we think."
-  );
+  const neutralTemplates = [
+    (
+      `That's an interesting point about ${topic}.\n\n` +
+      `Let me reflect that back and add a layer: the interesting thing about ${k0} ` +
+      "is that it connects to a broader pattern. Most of the challenges we face " +
+      "aren't isolated — they're symptoms of underlying structures.\n\n" +
+      "When you notice a pattern like this, the most powerful question is: " +
+      "what's the simplest change that would shift the entire system?\n\n" +
+      "Often the answer is smaller than we think."
+    ),
+    (
+      `I see what you're saying about ${topic}.\n\n` +
+      `There's a concept worth considering here: the difference between symptoms and root causes. ` +
+      `What you're describing about ${k0} might look like a surface-level issue, but ` +
+      "it often points to something deeper in how the system is structured.\n\n" +
+      "Try the 'five whys' exercise — ask 'why?' five times in a row about what you're observing. " +
+      "By the third or fourth 'why', you'll usually hit the real insight.\n\n" +
+      "What do you think the root cause might be?"
+    ),
+    (
+      `That observation about ${topic} connects to something I find fascinating.\n\n` +
+      `The things we notice most often are the things that matter most to us — even if ` +
+      "we haven't fully articulated why yet. The fact that ${k0} caught your attention " +
+      "suggests there's something unresolved there.\n\n" +
+      "Sometimes the best next step is simply to sit with the observation for a moment. " +
+      "Don't rush to solve it or explain it. Just let it be present in your thinking.\n\n" +
+      "What keeps pulling your attention back to this?"
+    ),
+  ];
+  return pickVariation(neutralTemplates, `s-${topic}`);
 }

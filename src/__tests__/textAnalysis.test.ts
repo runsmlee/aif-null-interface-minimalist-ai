@@ -6,6 +6,7 @@ import {
   analyzeSentiment,
   analyzeText,
   generateResponse,
+  detectDomain,
 } from "../lib/text-analysis";
 
 describe("tokenize", () => {
@@ -213,5 +214,89 @@ describe("generateResponse", () => {
     const response = generateResponse(analysis);
     expect(response).toContain("First");
     expect(response).toContain("Second");
+  });
+});
+
+describe("detectDomain", () => {
+  it("detects design domain from keywords", () => {
+    expect(detectDomain(["design", "interface"])).toBe("design");
+    expect(detectDomain(["ux", "layout"])).toBe("design");
+    expect(detectDomain(["typography", "color"])).toBe("design");
+  });
+
+  it("detects technology domain from keywords", () => {
+    expect(detectDomain(["code", "programming"])).toBe("technology");
+    expect(detectDomain(["react", "javascript"])).toBe("technology");
+    expect(detectDomain(["frontend", "debug"])).toBe("technology");
+  });
+
+  it("detects productivity domain from keywords", () => {
+    expect(detectDomain(["focus", "productivity"])).toBe("productivity");
+    expect(detectDomain(["habit", "routine"])).toBe("productivity");
+    expect(detectDomain(["schedule", "priority"])).toBe("productivity");
+  });
+
+  it("detects creativity domain from keywords", () => {
+    expect(detectDomain(["creative", "inspiration"])).toBe("creativity");
+    expect(detectDomain(["art", "music"])).toBe("creativity");
+    expect(detectDomain(["brainstorm", "idea"])).toBe("creativity");
+  });
+
+  it("detects philosophy domain from keywords", () => {
+    expect(detectDomain(["think", "meaning"])).toBe("philosophy");
+    expect(detectDomain(["purpose", "life"])).toBe("philosophy");
+    expect(detectDomain(["wisdom", "truth"])).toBe("philosophy");
+  });
+
+  it("returns general for unrecognized keywords", () => {
+    expect(detectDomain(["random", "words"])).toBe("general");
+    expect(detectDomain([])).toBe("general");
+  });
+
+  it("prioritizes domain by iteration order when keywords match multiple", () => {
+    // "design" is checked first in domain order, so it wins over technology keywords
+    expect(detectDomain(["code", "design"])).toBe("design");
+    // When only technology keywords are present, technology domain is detected
+    expect(detectDomain(["code", "debug"])).toBe("technology");
+  });
+});
+
+describe("generateResponse domain tips", () => {
+  it("appends design tip for design-related input", () => {
+    const analysis = analyzeText("What makes good interface design?");
+    const response = generateResponse(analysis);
+    expect(response).toContain("Design tip");
+  });
+
+  it("appends technology tip for tech-related input", () => {
+    const analysis = analyzeText("How should I structure my React code?");
+    const response = generateResponse(analysis);
+    expect(response).toContain("Tech tip");
+  });
+
+  it("appends productivity tip for productivity-related input", () => {
+    const analysis = analyzeText("How can I improve my focus and productivity?");
+    const response = generateResponse(analysis);
+    expect(response).toContain("Focus tip");
+  });
+
+  it("appends creativity tip for creativity-related input", () => {
+    const analysis = analyzeText("Help me think more creatively about art and music");
+    const response = generateResponse(analysis);
+    expect(response).toContain("Creativity tip");
+  });
+
+  it("appends philosophy thought for philosophy-related input", () => {
+    const analysis = analyzeText("What is the meaning and purpose of life?");
+    const response = generateResponse(analysis);
+    expect(response).toContain("Thought");
+  });
+
+  it("does not append tip for general domain input", () => {
+    const analysis = analyzeText("The weather is nice today.");
+    const response = generateResponse(analysis);
+    expect(response).not.toContain("tip");
+    expect(response).not.toContain("Tip");
+    expect(response).not.toContain("Thought");
   });
 });

@@ -64,7 +64,7 @@ export function ChatInterface() {
     <div className="flex flex-col h-dvh max-h-dvh bg-neutral-950">
       <a
         href="#chat-input"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary-600 focus:text-white focus:px-4 focus:py-3 focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none focus:shadow-lg focus:shadow-primary-600/30 focus:min-h-[44px] focus:min-w-[44px] focus:flex focus:items-center focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600 focus:border focus:border-white/20"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-1/2 focus:-translate-x-1/2 focus:z-50 focus:bg-primary-600 focus:text-white focus:px-5 focus:py-3 focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none focus:shadow-lg focus:shadow-primary-600/30 focus:min-h-[44px] focus:min-w-[44px] focus:flex focus:items-center focus:gap-2 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-neutral-950 focus:border focus:border-white/20 focus:transition-all focus:duration-200"
       >
         Skip to chat input
       </a>

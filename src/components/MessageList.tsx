@@ -103,7 +103,7 @@ function EmptyState({
         Ask anything. Null Interface provides thoughtful, minimalist responses to
         help you think clearly.
       </p>
-      <div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="Conversation starters">
+      <div className="mt-8 flex flex-wrap justify-center gap-2 stagger-enter" role="group" aria-label="Conversation starters">
         {SUGGESTIONS.map((suggestion) => (
           <button
             key={suggestion}
