@@ -6,6 +6,7 @@ describe("Header", () => {
   const defaultProps = {
     messageCount: 0,
     wordCount: 0,
+    duration: 0,
     onClear: vi.fn(),
     onExport: vi.fn(),
   };
@@ -30,6 +31,29 @@ describe("Header", () => {
     expect(screen.getByText(/45 words/)).toBeInTheDocument();
   });
 
+  it("does not show duration when duration is 0", () => {
+    render(<Header {...defaultProps} messageCount={3} wordCount={45} duration={0} />);
+    // The stats text should end with word count, not have a duration suffix
+    const desktopStats = screen.getByText(/3 msgs · 45 words/);
+    // Text content should be exactly "3 msgs · 45 words" (no trailing duration)
+    expect(desktopStats.textContent).toMatch(/3 msgs · 45 words$/);
+    expect(desktopStats.textContent).not.toContain("just now");
+  });
+
+  it("shows formatted duration when duration is non-zero", () => {
+    render(<Header {...defaultProps} messageCount={3} wordCount={45} duration={300} />);
+    // Duration "5m" should appear in both desktop and mobile stats
+    const matchingElements = screen.getAllByText(/5m/);
+    expect(matchingElements.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("shows hours and minutes duration", () => {
+    render(<Header {...defaultProps} messageCount={3} wordCount={45} duration={5400} />);
+    // Both desktop and mobile spans should contain the duration
+    const matchingElements = screen.getAllByText(/1h 30m/);
+    expect(matchingElements.length).toBeGreaterThanOrEqual(2);
+  });
+
   it("disables clear button when no messages", () => {
     render(<Header {...defaultProps} />);
     expect(
@@ -47,7 +71,7 @@ describe("Header", () => {
   it("calls onClear when clear button is clicked twice (confirm flow)", async () => {
     const user = (await import("@testing-library/user-event")).default.setup();
     const onClear = vi.fn();
-    render(<Header {...defaultProps} messageCount={2} wordCount={30} onClear={onClear} />);
+    render(<Header {...defaultProps} messageCount={2} wordCount={30} duration={0} onClear={onClear} />);
 
     // First click shows confirmation
     await user.click(
@@ -84,7 +108,7 @@ describe("Header", () => {
   it("calls onExport when export button is clicked", async () => {
     const user = (await import("@testing-library/user-event")).default.setup();
     const onExport = vi.fn();
-    render(<Header {...defaultProps} messageCount={2} wordCount={30} onExport={onExport} />);
+    render(<Header {...defaultProps} messageCount={2} wordCount={30} duration={0} onExport={onExport} />);
 
     await user.click(
       screen.getByRole("button", { name: /export conversation/i })

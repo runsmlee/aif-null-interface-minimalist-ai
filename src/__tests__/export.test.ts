@@ -4,6 +4,7 @@ import {
   exportAsText,
   countWords,
   getDuration,
+  formatDuration,
   downloadFile,
 } from "../utils/export";
 import type { Message } from "../types";
@@ -150,5 +151,40 @@ describe("downloadFile", () => {
     expect(clickSpy).toHaveBeenCalled();
     expect(appendChildSpy).toHaveBeenCalledWith(anchor);
     expect(removeChildSpy).toHaveBeenCalledWith(anchor);
+  });
+});
+
+describe("formatDuration", () => {
+  it("returns empty string for 0 seconds", () => {
+    expect(formatDuration(0)).toBe("");
+  });
+
+  it("returns empty string for negative seconds", () => {
+    expect(formatDuration(-1)).toBe("");
+  });
+
+  it('returns "just now" for less than 60 seconds', () => {
+    expect(formatDuration(30)).toBe("just now");
+    expect(formatDuration(59)).toBe("just now");
+    expect(formatDuration(1)).toBe("just now");
+  });
+
+  it("formats single minutes correctly", () => {
+    expect(formatDuration(60)).toBe("1m");
+    expect(formatDuration(300)).toBe("5m");
+    expect(formatDuration(3599)).toBe("59m");
+  });
+
+  it("formats hours and minutes correctly", () => {
+    expect(formatDuration(3600)).toBe("1h");
+    expect(formatDuration(5400)).toBe("1h 30m");
+    expect(formatDuration(7200)).toBe("2h");
+    expect(formatDuration(9000)).toBe("2h 30m");
+    expect(formatDuration(3661)).toBe("1h 1m");
+  });
+
+  it("formats very long durations", () => {
+    expect(formatDuration(86400)).toBe("24h");
+    expect(formatDuration(90061)).toBe("25h 1m");
   });
 });

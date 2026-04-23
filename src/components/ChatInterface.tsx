@@ -71,6 +71,7 @@ export function ChatInterface() {
       <Header
         messageCount={messages.length}
         wordCount={stats.wordCount}
+        duration={stats.duration}
         onClear={clearConversation}
         onExport={handleExport}
       />

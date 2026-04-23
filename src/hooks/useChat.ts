@@ -3,7 +3,7 @@ import type { ConversationState, ChatAction, Message } from "@/types";
 import type { ChatMessage } from "@/utils/ai";
 import { generateId } from "@/utils/id";
 import { fetchAIStream } from "@/utils/ai";
-import { saveMessages, loadMessages, clearMessages } from "@/utils/storage";
+import { loadMessages, clearMessages, debouncedSave, cancelPendingSave } from "@/utils/storage";
 
 const initialState: ConversationState = {
   messages: [],
@@ -134,11 +134,11 @@ export function useChat() {
     }
   }, []);
 
-  // Persist messages to localStorage when they change
+  // Persist messages to localStorage when they change (debounced to coalesce rapid updates)
   useEffect(() => {
     if (!hasRestored.current) return;
     if (state.messages.length > 0) {
-      saveMessages(state.messages);
+      debouncedSave(state.messages);
     }
   }, [state.messages]);
 
@@ -216,6 +216,7 @@ export function useChat() {
       abortRef.current.abort();
       abortRef.current = null;
     }
+    cancelPendingSave();
     dispatch({ type: "CLEAR_CONVERSATION" });
     clearMessages();
   }, []);

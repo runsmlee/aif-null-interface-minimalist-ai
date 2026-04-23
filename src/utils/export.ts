@@ -69,3 +69,22 @@ export function downloadFile(
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Format a duration in seconds into a human-readable string.
+ * Returns empty string for zero or negative values.
+ *
+ * Examples: "just now", "5m", "1h", "1h 30m"
+ */
+export function formatDuration(seconds: number): string {
+  if (seconds <= 0) return "";
+  if (seconds < 60) return "just now";
+
+  const totalMinutes = Math.floor(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h`;
+  return `${minutes}m`;
+}

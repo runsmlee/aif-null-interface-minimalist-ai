@@ -1,9 +1,11 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { IconDownload } from "./Icons";
+import { formatDuration } from "@/utils/export";
 
 interface HeaderProps {
   readonly messageCount: number;
   readonly wordCount: number;
+  readonly duration: number;
   readonly onClear: () => void;
   readonly onExport: () => void;
 }
@@ -11,6 +13,7 @@ interface HeaderProps {
 export const Header = memo(function Header({
   messageCount,
   wordCount,
+  duration,
   onClear,
   onExport,
 }: HeaderProps) {
@@ -54,7 +57,7 @@ export const Header = memo(function Header({
           Null Interface
         </h1>
         <span className="text-xs text-neutral-500 font-mono hidden sm:inline">
-          v2.4
+          v2.5
         </span>
       </div>
 
@@ -62,17 +65,17 @@ export const Header = memo(function Header({
         {messageCount > 0 && (
           <span
             className="text-xs text-neutral-500 tabular-nums hidden sm:inline-block"
-            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"}, ${wordCount} words`}
+            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"}, ${wordCount} words}${duration > 0 ? `, duration ${formatDuration(duration)}` : ""}`}
           >
-            {messageCount} {messageCount === 1 ? "msg" : "msgs"} · {wordCount} words
+            {messageCount} {messageCount === 1 ? "msg" : "msgs"} · {wordCount} words{duration > 0 ? ` · ${formatDuration(duration)}` : ""}
           </span>
         )}
         {messageCount > 0 && (
           <span
             className="text-xs text-neutral-500 tabular-nums sm:hidden"
-            aria-label={`${messageCount} messages, ${wordCount} words`}
+            aria-label={`${messageCount} messages, ${wordCount} words${duration > 0 ? `, duration ${formatDuration(duration)}` : ""}`}
           >
-            {messageCount}{messageCount === 1 ? "msg" : "msgs"}
+            {messageCount}{messageCount === 1 ? "msg" : "msgs"} · {wordCount}w{duration > 0 ? ` · ${formatDuration(duration)}` : ""}
           </span>
         )}
         {messageCount > 0 && (

@@ -174,7 +174,8 @@ describe("useChat", () => {
     expect(sentMessages[sentMessages.length - 1]?.content).toBe("Second message");
   });
 
-  it("persists messages to localStorage", async () => {
+  it("persists messages to localStorage (debounced)", async () => {
+    vi.useFakeTimers();
     const { result } = renderHook(() => useChat());
 
     await act(async () => {
@@ -185,10 +186,23 @@ describe("useChat", () => {
       result.current.finalizeStreaming();
     });
 
-    const stored = JSON.parse(
+    // Save is debounced (500ms) — not yet persisted
+    const storedBefore = JSON.parse(
       window.localStorage.getItem("null-interface-messages") ?? "[]",
     );
-    expect(stored.length).toBe(2); // user + assistant
+    expect(storedBefore.length).toBe(0);
+
+    // Advance past debounce delay to trigger save
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+
+    const storedAfter = JSON.parse(
+      window.localStorage.getItem("null-interface-messages") ?? "[]",
+    );
+    expect(storedAfter.length).toBe(2); // user + assistant
+
+    vi.useRealTimers();
   });
 
   it("restores messages from localStorage on mount", async () => {
