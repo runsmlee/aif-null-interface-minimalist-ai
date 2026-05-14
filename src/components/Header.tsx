@@ -1,6 +1,7 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { IconDownload } from "./Icons";
 import { formatDuration } from "@/utils/export";
+import { APP_NAME, APP_VERSION } from "@/constants";
 
 interface HeaderProps {
   readonly messageCount: number;
@@ -54,10 +55,10 @@ export const Header = memo(function Header({
           <div className="w-2.5 h-2.5 rounded-full bg-primary-500 pulse-glow" />
         </div>
         <h1 className="text-base font-medium tracking-tight text-neutral-100">
-          Null Interface
+          {APP_NAME}
         </h1>
         <span className="text-xs text-neutral-500 font-mono hidden sm:inline">
-          v2.5
+          {APP_VERSION}
         </span>
       </div>
 
@@ -65,7 +66,7 @@ export const Header = memo(function Header({
         {messageCount > 0 && (
           <span
             className="text-xs text-neutral-500 tabular-nums hidden sm:inline-block"
-            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"}, ${wordCount} words}${duration > 0 ? `, duration ${formatDuration(duration)}` : ""}`}
+            aria-label={`${messageCount} message${messageCount === 1 ? "" : "s"}, ${wordCount} words${duration > 0 ? `, duration ${formatDuration(duration)}` : ""}`}
           >
             {messageCount} {messageCount === 1 ? "msg" : "msgs"} · {wordCount} words{duration > 0 ? ` · ${formatDuration(duration)}` : ""}
           </span>

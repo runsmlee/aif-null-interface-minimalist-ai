@@ -206,3 +206,17 @@ a {
 .message-enter {
   animation: fade-in-up 300ms ease-out forwards;
 }
+
+/* Typing indicator dots — staggered animation via predefined classes */
+.typing-dot {
+  animation: pulse-glow 1.4s ease-in-out infinite;
+}
+.typing-dot-0 {
+  animation-delay: 0s;
+}
+.typing-dot-1 {
+  animation-delay: 0.2s;
+}
+.typing-dot-2 {
+  animation-delay: 0.4s;
+}

@@ -9,6 +9,7 @@ import { useChat } from "@/hooks/useChat";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { countWords, getDuration, exportAsJson, downloadFile } from "@/utils/export";
+import { APP_NAME, EXPORT_PREFIX } from "@/constants";
 
 export function ChatInterface() {
   const {
@@ -36,10 +37,10 @@ export function ChatInterface() {
 
   // Update document title based on conversation state
   const documentTitle = useMemo(() => {
-    if (error) return "⚠ Null Interface — Error";
-    if (isLoading || isStreaming) return "Null Interface — Thinking…";
-    if (messages.length > 0) return `Null Interface — ${messages.length} message${messages.length === 1 ? "" : "s"}`;
-    return "Null Interface";
+    if (error) return `⚠ ${APP_NAME} — Error`;
+    if (isLoading || isStreaming) return `${APP_NAME} — Thinking…`;
+    if (messages.length > 0) return `${APP_NAME} — ${messages.length} message${messages.length === 1 ? "" : "s"}`;
+    return APP_NAME;
   }, [messages.length, isLoading, isStreaming, error]);
   useDocumentTitle(documentTitle);
 
@@ -57,7 +58,7 @@ export function ChatInterface() {
     if (messages.length === 0) return;
     const json = exportAsJson(messages);
     const date = new Date().toISOString().split("T")[0];
-    downloadFile(json, `null-interface-${date}.json`, "application/json");
+    downloadFile(json, `${EXPORT_PREFIX}-${date}.json`, "application/json");
   }, [messages]);
 
   return (

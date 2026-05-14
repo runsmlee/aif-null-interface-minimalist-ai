@@ -1,4 +1,5 @@
 import type { Message } from "@/types";
+import { APP_NAME } from "@/constants";
 
 /**
  * Export a conversation as a JSON string.
@@ -28,7 +29,7 @@ export function exportAsText(messages: readonly Message[]): string {
     const role = m.role === "user" ? "You" : "AI";
     return `[${time}] ${role}:\n${m.content}`;
   });
-  return `Null Interface — Conversation Export\n${"=".repeat(40)}\n\n${lines.join("\n\n")}`;
+  return `${APP_NAME} — Conversation Export\n${"=".repeat(40)}\n\n${lines.join("\n\n")}`;
 }
 
 /**

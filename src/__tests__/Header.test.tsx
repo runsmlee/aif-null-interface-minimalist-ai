@@ -115,4 +115,21 @@ describe("Header", () => {
     );
     expect(onExport).toHaveBeenCalledTimes(1);
   });
+
+  it("has correct aria-label without stray characters", () => {
+    render(<Header {...defaultProps} messageCount={3} wordCount={45} duration={300} />);
+    const desktopStats = screen.getByText(/3 msgs · 45 words/);
+    const label = desktopStats.getAttribute("aria-label");
+    // The aria-label should NOT contain a stray "}" after "words"
+    expect(label).not.toContain("words}");
+    expect(label).toBe("3 messages, 45 words, duration 5m");
+  });
+
+  it("has correct aria-label without duration when duration is 0", () => {
+    render(<Header {...defaultProps} messageCount={2} wordCount={30} duration={0} />);
+    const desktopStats = screen.getByText(/2 msgs · 30 words/);
+    const label = desktopStats.getAttribute("aria-label");
+    expect(label).not.toContain("words}");
+    expect(label).toBe("2 messages, 30 words");
+  });
 });

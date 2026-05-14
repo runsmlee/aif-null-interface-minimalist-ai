@@ -120,6 +120,8 @@ function EmptyState({
   );
 }
 
+const TYPING_DOTS = [0, 1, 2] as const;
+
 function TypingIndicator() {
   return (
     <div
@@ -134,13 +136,10 @@ function TypingIndicator() {
             ai
           </span>
           <div className="flex items-center gap-1 ml-1" aria-hidden="true">
-            {[0, 1, 2].map((i) => (
+            {TYPING_DOTS.map((i) => (
               <span
                 key={i}
-                className="w-1.5 h-1.5 rounded-full bg-primary-500/60"
-                style={{
-                  animation: `pulse-glow 1.4s ease-in-out ${i * 0.2}s infinite`,
-                }}
+                className={`w-1.5 h-1.5 rounded-full bg-primary-500/60 typing-dot typing-dot-${i}`}
               />
             ))}
           </div>

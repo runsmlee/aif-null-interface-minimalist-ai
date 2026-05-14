@@ -59,7 +59,7 @@ describe("App", () => {
 
   it("shows version badge on larger screens", () => {
     render(<App />);
-    expect(screen.getByText("v2.5")).toBeInTheDocument();
+    expect(screen.getByText("v2.6")).toBeInTheDocument();
   });
 
   it("has a main landmark for page semantics", () => {
