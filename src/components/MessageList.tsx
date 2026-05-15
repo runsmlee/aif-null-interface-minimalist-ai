@@ -110,7 +110,7 @@ function EmptyState({
             type="button"
             onClick={() => onSuggestionClick?.(suggestion)}
             className="text-xs text-neutral-400 bg-neutral-800/50 border border-neutral-700/30 hover:border-primary-500/30 hover:text-neutral-200 hover:bg-neutral-800 px-3 py-2 rounded-full transition-all duration-200 cursor-pointer min-h-[44px]"
-            aria-label={`Suggestion: ${suggestion}`}
+            aria-label={`Start conversation: ${suggestion}`}
           >
             {suggestion}
           </button>

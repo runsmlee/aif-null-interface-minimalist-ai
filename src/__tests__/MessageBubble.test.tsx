@@ -85,4 +85,39 @@ describe("MessageBubble", () => {
     fireEvent.click(deleteBtn);
     expect(onDelete).toHaveBeenCalledWith("msg-2");
   });
+
+  it("shows copied state after successful copy", async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: writeTextMock },
+      writable: true,
+      configurable: true,
+    });
+
+    render(<MessageBubble message={assistantMessage} />);
+
+    const copyBtn = screen.getByRole("button", { name: /copy message/i });
+    fireEvent.click(copyBtn);
+
+    // Wait for the async clipboard op to resolve and state to update
+    await vi.waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /copied to clipboard/i })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("user messages also have a copy button", () => {
+    render(<MessageBubble message={userMessage} />);
+    expect(
+      screen.getByRole("button", { name: /copy message/i })
+    ).toBeInTheDocument();
+  });
+
+  it("renders timestamp for the message", () => {
+    render(<MessageBubble message={assistantMessage} />);
+    // The timestamp span should exist (has aria-label with "Sent at")
+    const timestampEl = screen.getByLabelText(/sent at/i);
+    expect(timestampEl).toBeInTheDocument();
+  });
 });

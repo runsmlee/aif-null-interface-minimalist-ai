@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { Header } from "../components/Header";
 
@@ -131,5 +131,37 @@ describe("Header", () => {
     const label = desktopStats.getAttribute("aria-label");
     expect(label).not.toContain("words}");
     expect(label).toBe("2 messages, 30 words");
+  });
+
+  it("clear button confirmation auto-dismisses after timeout", () => {
+    vi.useFakeTimers();
+    const onClear = vi.fn();
+    render(<Header {...defaultProps} messageCount={2} wordCount={30} duration={0} onClear={onClear} />);
+
+    // First click shows confirmation
+    const clearBtn = screen.getByRole("button", { name: /clear conversation/i });
+    act(() => {
+      fireEvent.click(clearBtn);
+    });
+
+    // After click, the button text should change to "Confirm?"
+    expect(screen.getByText("Confirm?")).toBeInTheDocument();
+
+    // Advance past auto-dismiss timeout (3s)
+    act(() => {
+      vi.advanceTimersByTime(3100);
+    });
+
+    // Button should revert to showing "Clear"
+    expect(screen.getByText("Clear")).toBeInTheDocument();
+    expect(screen.queryByText("Confirm?")).not.toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+
+  it("export button has title attribute for tooltip", () => {
+    render(<Header {...defaultProps} messageCount={2} wordCount={30} />);
+    const exportBtn = screen.getByRole("button", { name: /export conversation/i });
+    expect(exportBtn).toHaveAttribute("title", "Export conversation as JSON");
   });
 });

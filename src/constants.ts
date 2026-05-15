@@ -8,7 +8,7 @@
 export const APP_NAME = "Null Interface";
 
 /** Semantic version displayed in the header. */
-export const APP_VERSION = "v2.6";
+export const APP_VERSION = "v2.7";
 
 /** Storage key prefix for localStorage persistence. */
 export const STORAGE_KEY = "null-interface-messages";

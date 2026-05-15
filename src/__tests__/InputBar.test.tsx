@@ -96,4 +96,52 @@ describe("InputBar", () => {
       screen.getByRole("button", { name: /send message/i })
     ).toBeDisabled();
   });
+
+  it("clears input after successful send", async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(<InputBar onSend={onSend} isLoading={false} />);
+
+    const input = screen.getByPlaceholderText("Ask anything...");
+    await user.type(input, "Hello!{Enter}");
+
+    expect(onSend).toHaveBeenCalledWith("Hello!");
+    expect(input).toHaveValue("");
+  });
+
+  it("send button click also sends message", async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(<InputBar onSend={onSend} isLoading={false} />);
+
+    const input = screen.getByPlaceholderText("Ask anything...");
+    await user.type(input, "Test message");
+
+    const sendBtn = screen.getByRole("button", { name: /send message/i });
+    await user.click(sendBtn);
+
+    expect(onSend).toHaveBeenCalledWith("Test message");
+  });
+
+  it("send button is disabled during loading", () => {
+    const onSend = vi.fn();
+    render(<InputBar onSend={onSend} isLoading={true} />);
+
+    expect(
+      screen.getByRole("button", { name: /send message/i })
+    ).toBeDisabled();
+  });
+
+  it("does not send on Shift+Enter", async () => {
+    const user = userEvent.setup();
+    const onSend = vi.fn();
+    render(<InputBar onSend={onSend} isLoading={false} />);
+
+    const input = screen.getByPlaceholderText("Ask anything...");
+    await user.type(input, "Hello");
+
+    // Shift+Enter should not trigger send
+    fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
+    expect(onSend).not.toHaveBeenCalled();
+  });
 });

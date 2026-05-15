@@ -87,7 +87,7 @@ describe("MessageList", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: /suggestion: what is minimalism/i })
+      screen.getByRole("button", { name: /start conversation: what is minimalism/i })
     );
     expect(onSuggestionClick).toHaveBeenCalledWith("What is minimalism?");
   });
@@ -196,5 +196,35 @@ describe("MessageList", () => {
     render(<MessageList messages={mockMessages} isLoading={false} isStreaming={false} streamingText={null} />);
     const log = screen.getByRole("log");
     expect(log).toHaveAttribute("aria-relevant", "additions");
+  });
+
+  it("passes onDeleteMessage to MessageBubble children", () => {
+    const onDeleteMessage = vi.fn();
+    render(
+      <MessageList
+        messages={mockMessages}
+        isLoading={false}
+        isStreaming={false}
+        streamingText={null}
+        onDeleteMessage={onDeleteMessage}
+      />
+    );
+
+    // Each message should have a delete button since onDeleteMessage is provided
+    const deleteButtons = screen.getAllByRole("button", { name: /delete message/i });
+    expect(deleteButtons.length).toBe(mockMessages.length);
+  });
+
+  it("does not show delete buttons when onDeleteMessage is not provided", () => {
+    render(
+      <MessageList
+        messages={mockMessages}
+        isLoading={false}
+        isStreaming={false}
+        streamingText={null}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: /delete message/i })).not.toBeInTheDocument();
   });
 });

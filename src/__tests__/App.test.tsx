@@ -38,28 +38,28 @@ describe("App", () => {
   it("renders suggestion chips as buttons", () => {
     render(<App />);
     expect(
-      screen.getByRole("button", { name: /suggestion: what is minimalism/i })
+      screen.getByRole("button", { name: /start conversation: what is minimalism/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /suggestion: help me focus/i })
+      screen.getByRole("button", { name: /start conversation: help me focus/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /suggestion: explain simply/i })
+      screen.getByRole("button", { name: /start conversation: explain simply/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /suggestion: design advice/i })
+      screen.getByRole("button", { name: /start conversation: design advice/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /suggestion: how to think clearly/i })
+      screen.getByRole("button", { name: /start conversation: how to think clearly/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /suggestion: what makes good ux/i })
+      screen.getByRole("button", { name: /start conversation: what makes good ux/i })
     ).toBeInTheDocument();
   });
 
   it("shows version badge on larger screens", () => {
     render(<App />);
-    expect(screen.getByText("v2.6")).toBeInTheDocument();
+    expect(screen.getByText("v2.7")).toBeInTheDocument();
   });
 
   it("has a main landmark for page semantics", () => {

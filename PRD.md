@@ -11,11 +11,13 @@ Users who want a clean, no-frills AI chat experience that prioritizes readabilit
 2. **Message History** — Conversations persist across sessions via localStorage
 3. **Streaming Responses** — Real-time SSE streaming with typewriter effect
 4. **Error Recovery** — Graceful error handling with retry capabilities
-5. **Keyboard Shortcuts** — `/` to focus input, `Cmd/Ctrl+K` to focus input, `Esc` to blur, `Enter` to send
+5. **Keyboard Shortcuts** — `/` to focus input, `Cmd/Ctrl+K` to focus input, `Esc` to blur, `?` for help, `Enter` to send
 6. **Accessibility** — WCAG 2.1 AA compliant with semantic HTML, ARIA labels, and keyboard navigation
 7. **Message Management** — Delete individual messages from the conversation
 8. **Conversation Export** — Export conversations as JSON for backup
 9. **Conversation Statistics** — Real-time word count and message count in header
+10. **Intelligent Text Analysis** — Domain-aware response generation with NLP pipeline
+11. **Scroll-to-Bottom** — Floating button when user scrolls up during streaming
 
 ## Design Tokens
 - **Primary Color:** #EF4444 (red)
@@ -27,7 +29,14 @@ Users who want a clean, no-frills AI chat experience that prioritizes readabilit
 - React 19 + TypeScript (strict mode)
 - Vite 8 build tool
 - Tailwind CSS v4
-- Vitest + React Testing Library
+- Vitest + React Testing Library for tests
+
+## Architecture
+- **State Management:** useReducer with discriminated union actions
+- **Streaming:** SSE client with AbortController support
+- **Persistence:** localStorage with debounced writes and message validation
+- **Error Handling:** ErrorBoundary for render errors, ErrorBanner for API errors
+- **Performance:** requestAnimationFrame for auto-scroll, memoized components, rAF-based typewriter
 
 ## Acceptance Criteria
 - [x] App renders without crashing
@@ -37,11 +46,15 @@ Users who want a clean, no-frills AI chat experience that prioritizes readabilit
 - [x] Error states display with retry option
 - [x] Conversation can be cleared (with confirmation)
 - [x] Messages persist across page reloads via localStorage
-- [x] Keyboard shortcuts work (`/` focus, `Cmd/Ctrl+K` focus, `Esc` blur, `Enter` send)
+- [x] Keyboard shortcuts work (`/` focus, `Cmd/Ctrl+K` focus, `Esc` blur, `?` help, `Enter` send)
 - [x] All interactive elements have accessible labels
 - [x] Build passes with zero TypeScript errors
 - [x] All tests pass
 - [x] Users can delete individual messages
 - [x] Users can export conversations as JSON
-- [x] Conversation statistics (word count) are visible in the header
+- [x] Conversation statistics (word count, duration) are visible in the header
 - [x] Mobile-friendly touch targets (minimum 44px)
+- [x] Scroll-to-bottom button during streaming
+- [x] Skip-to-content link for keyboard navigation
+- [x] Focus trapping in modal dialogs
+- [x] prefers-reduced-motion respected
